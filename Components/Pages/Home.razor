@@ -1,0 +1,45 @@
+﻿@page "/"
+@using BlazorForms.Data
+@using BlazorForms.Data.Services
+@using Microsoft.AspNetCore.Identity
+@inject AuthenticationStateProvider AuthenticationState
+@inject UserManager<ApplicationUser> UserManager
+@inject ITemplateService TemplateService
+
+<PageTitle>Home</PageTitle>
+
+<h1>Hello, world!</h1>
+
+Welcome to your new app.
+
+<AuthorizeView>
+    <Authorized>
+        <div class="d-flex flex-column ">
+            User Id: @UserId
+            <button class="btn btn-primary" @onclick="CreateForm">Create an empty template</button>
+        </div>
+        
+    </Authorized>
+</AuthorizeView>
+@code {
+    
+    string? UserId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthenticationState.GetAuthenticationStateAsync();
+        if (state.User.Identity is { IsAuthenticated: true })
+        {
+            UserId = UserManager.GetUserId(state.User);
+        }
+       
+    }
+
+    private async Task CreateForm()
+    {
+        var template = await TemplateService.CreateEmptyForm();
+        Console.WriteLine(template.Id);
+    }
+
+
+}

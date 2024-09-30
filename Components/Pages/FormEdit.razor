@@ -1,0 +1,38 @@
+﻿@page "/form/{TemplateId}/edit"
+@using BlazorForms.Data.Models
+@using BlazorForms.Data.Services
+@inject ITemplateService TemplateService
+
+@if (Template is null)
+{
+    <span>loading...</span>
+}
+else
+{
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card card-form">
+                    <div class="card-body">
+                        <h2 class="card-title">@(Template.Name ?? "Untitled Form")</h2>
+                        <p class="card-text">Solo puedes rellenar este formulario una vez.</p>
+                        <p class="card-text">Ponte en contacto con el propietario del formulario si crees que se trata de un error.</p>
+                        <button class="btn btn-primary">Ver puntuación</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public string TemplateId { get; set; } = null!;
+
+    private Template? Template { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var id = Guid.Parse(TemplateId);
+        Template = await TemplateService.FindTemplateByIdAsync(id);
+    }
+}
