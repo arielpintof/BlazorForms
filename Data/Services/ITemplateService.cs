@@ -7,4 +7,5 @@ public interface ITemplateService
     Task<Template> CreateEmptyForm();
     Task<List<Template>> GetTemplatesAsync();
     Task<Template?> FindTemplateByIdAsync(Guid id);
+    Task UpdateFormNameAsync(Guid templateId, string name);
 }

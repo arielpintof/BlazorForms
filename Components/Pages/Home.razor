@@ -5,6 +5,7 @@
 @inject AuthenticationStateProvider AuthenticationState
 @inject UserManager<ApplicationUser> UserManager
 @inject ITemplateService TemplateService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Home</PageTitle>
 
@@ -39,6 +40,7 @@ Welcome to your new app.
     {
         var template = await TemplateService.CreateEmptyForm();
         Console.WriteLine(template.Id);
+        NavigationManager.NavigateTo($"/form/{template.Id}/edit");
     }
 
 

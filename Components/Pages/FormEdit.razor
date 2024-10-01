@@ -5,34 +5,74 @@
 
 @if (Template is null)
 {
-    <span>loading...</span>
+   <span>loading...</span>
 }
 else
 {
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <div class="card card-form">
-                    <div class="card-body">
+   <div class="container mt-5">
+      <div class="row justify-content-center">
+         <div class="col-md-6">
+            <div class="card card-form">
+               <div class="card-body">
+                  <div class="editable-header @(IsEditing ? "editing" : "")" @onclick="StartEditing">
+                     @if (IsEditing)
+                     {
+                        <input @bind="Template.Name"
+                               @bind:event="oninput"
+                               @onblur="StopEditing"
+                               @onkeydown="HandleKeyDown"
+                               @ref="inputElement"/>
+                     }
+                     else
+                     {
                         <h2 class="card-title">@(Template.Name ?? "Untitled Form")</h2>
-                        <p class="card-text">Solo puedes rellenar este formulario una vez.</p>
-                        <p class="card-text">Ponte en contacto con el propietario del formulario si crees que se trata de un error.</p>
-                        <button class="btn btn-primary">Ver puntuación</button>
-                    </div>
-                </div>
+                     }
+                  </div>
+                  <textarea>Description</textarea>
+               </div>
             </div>
-        </div>
-    </div>
+         </div>
+      </div>
+   </div>
 }
 
 @code {
-    [Parameter] public string TemplateId { get; set; } = null!;
+   [Parameter] public string TemplateId { get; set; } = null!;
+   private bool IsEditing { get; set; }
+   private ElementReference inputElement;
+   private Template? Template { get; set; }
 
-    private Template? Template { get; set; }
+   protected override async Task OnParametersSetAsync()
+   {
+      var id = Guid.Parse(TemplateId);
+      Template = await TemplateService.FindTemplateByIdAsync(id);
+   }
 
-    protected override async Task OnParametersSetAsync()
-    {
-        var id = Guid.Parse(TemplateId);
-        Template = await TemplateService.FindTemplateByIdAsync(id);
-    }
+   
+
+   private void StartEditing()
+   {
+      IsEditing = true;
+      InvokeAsync(async () =>
+      {
+         await Task.Delay(50); 
+         await inputElement.FocusAsync();
+      });
+   }
+
+   private void StopEditing() => IsEditing = false;
+
+   private void HandleKeyDown(KeyboardEventArgs e)
+   {
+      if (e.Key != "Enter") return;
+      UpdateTitle();
+      StopEditing();
+   }
+
+   private void UpdateTitle()
+   {
+      if (Template?.Name != null)
+         TemplateService.UpdateFormNameAsync(Guid.Parse(TemplateId), Template.Name);
+   }
+
 }
