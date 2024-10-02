@@ -38,7 +38,7 @@ Welcome to your new app.
 
     private async Task CreateForm()
     {
-        var template = await TemplateService.CreateEmptyForm();
+        var template = await TemplateService.CreateEmptyTemplate();
         Console.WriteLine(template.Id);
         NavigationManager.NavigateTo($"/form/{template.Id}/edit");
     }
