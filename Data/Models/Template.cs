@@ -10,5 +10,5 @@ public class Template
     public string AuthorId { get; set; }
     public ApplicationUser Author { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public ICollection<Field> Fields { get; set; } = new List<Field>();
+    public IList<Field> Fields { get; set; } = new List<Field>();
 }
