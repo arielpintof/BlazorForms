@@ -1,8 +1,6 @@
-﻿using BlazorForms.Data.Dto;
-using BlazorForms.Data.Models;
+﻿using BlazorForms.Data.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace BlazorForms.Data.Services;
@@ -21,7 +19,7 @@ public class TemplateService : ITemplateService
         _userManager = userManager;
     }
 
-    public async Task<Template> CreateEmptyForm()
+    public async Task<Template> CreateEmptyTemplate()
     {
         var authState = await _authenticationState.GetAuthenticationStateAsync();
         if (authState.User.Identity is { IsAuthenticated: false }) return null;
@@ -44,14 +42,10 @@ public class TemplateService : ITemplateService
 
     public async Task<Template?> FindTemplateByIdAsync(Guid id)
     {
-        if (_context.Templates == null)
-        {
-            throw new InvalidOperationException("Templates DbSet is not initialized.");
-        }
-
         return await _context.Templates
             .Include(t => t.Fields)
             .Include(t => t.Author)
+            //.AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
@@ -67,5 +61,12 @@ public class TemplateService : ITemplateService
         await _context.Templates
             .Where(t => t.Id == templateId)
             .ExecuteUpdateAsync(e => e.SetProperty(t => t.Name, name));
+    }
+
+    public async Task UpdateDescriptionAsync(Guid templateId, string description)
+    {
+        await _context.Templates
+            .Where(t => t.Id == templateId)
+            .ExecuteUpdateAsync(e => e.SetProperty(t => t.Description, description));
     }
 }
