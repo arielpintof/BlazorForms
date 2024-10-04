@@ -13,3 +13,4 @@ riderModule.iml
 .vs/ProjectEvaluation/blazorforms.projects.v9.bin
 .vs/ProjectEvaluation/blazorforms.strings.v9.bin
 *.user
+*.pubxml
