@@ -28,7 +28,7 @@ else
                                @bind:event="oninput"
                                @onblur="StopEditing"
                                @onkeydown="HandleKeyDown"
-                               @ref="inputElement"/>
+                               @ref="_inputElement"/>
                         
                         
                      }
@@ -37,7 +37,7 @@ else
                         <h2 class="card-title">@(Template.Name ?? "Untitled Form")</h2>
                      }
                   </div>
-                  <Markdown Value="@markdownValue" ValueChanged="@OnMarkdownValueChanged" MinHeight="200px">
+                  <Markdown Value="@MarkdownValue" ValueChanged="@OnMarkdownValueChanged" MinHeight="200px">
                      <Toolbar>
                         <MarkdownToolbarButton Action="MarkdownAction.Bold" Title="Bold">
                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-type-bold" viewBox="0 0 16 16">
@@ -90,38 +90,30 @@ else
 @code {
    [Parameter] public string TemplateId { get; set; } = null!;
    private bool IsEditing { get; set; }
-   private ElementReference inputElement;
+   private ElementReference _inputElement;
    private Template? Template { get; set; }
-   string markdownValue { get; set; } = "# EasyMDE \n Go ahead, play around with the editor! Be sure to check out **bold**, *italic*, [links](https://google.com) and all the other features. You can type the Markdown syntax, use the toolbar, or use shortcuts like `ctrl-b` or `cmd-b`.";
-
-   string markdownHtml;
+   private string? MarkdownValue { get; set; } 
    private string MarkdownContent { get; set; } = string.Empty;
-   
+
    private string RenderMarkdown(string markdown)
    {
-      
       return Markdig.Markdown.ToHtml(markdown);
-   }
-   protected override void OnInitialized()
-   {
-      markdownHtml = Markdig.Markdown.ToHtml(markdownValue ?? string.Empty);
-      
-      base.OnInitialized();
    }
 
    protected override async Task OnParametersSetAsync()
    {
       var id = Guid.Parse(TemplateId);
       Template = await TemplateService.FindTemplateByIdAsync(id);
-      markdownValue = Template.Description;
-      MarkdownContent = Template.Description;
+      if (Template is null) return;
+      MarkdownValue = Template.Description;
+      MarkdownContent = Template.Description!;
    }
 
    Task OnMarkdownValueChanged(string value)
    {
-      markdownValue = value;
-      markdownHtml = Markdig.Markdown.ToHtml(markdownValue ?? string.Empty);
-      if (markdownValue != null) TemplateService.UpdateDescriptionAsync(Guid.Parse(TemplateId), markdownValue);
+      MarkdownValue = value;
+      //markdownHtml = Markdig.Markdown.ToHtml(markdownValue ?? string.Empty);
+      if (MarkdownValue != null) TemplateService.UpdateDescriptionAsync(Guid.Parse(TemplateId), MarkdownValue);
 
       return Task.CompletedTask;
    }
@@ -130,7 +122,7 @@ else
    {
       IsEditing = true;
       await Task.Delay(50);
-      await inputElement.FocusAsync();
+      await _inputElement.FocusAsync();
    }
 
    private void StopEditing() => IsEditing = false;
