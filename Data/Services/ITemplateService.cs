@@ -9,4 +9,5 @@ public interface ITemplateService
     Task<Template?> FindTemplateByIdAsync(Guid id);
     Task UpdateFormNameAsync(Guid templateId, string name);
     Task UpdateDescriptionAsync(Guid templateId, string description);
+    Task<IList<Template>> FindTemplatesByAuthor(string authorId);
 }

@@ -12,4 +12,8 @@ public interface IFieldService
     Task<Field?> FindFieldByIdASync(Guid id);
 
     Task UpdateFieldAsync(Field field);
+
+    Task AddQuestion(Guid fieldId);
+
+    Task RemoveQuestion(Guid optionId);
 }

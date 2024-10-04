@@ -51,3 +51,7 @@
 .editable-header.editing::after {
     transform: scaleX(1);
 }
+
+.border-muted {
+    border-color: darkgrey !important; /* Esto es el color 'muted' de Bootstrap */
+}

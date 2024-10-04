@@ -1,75 +1,131 @@
 ﻿@using BlazorForms.Data.Models
 @using BlazorForms.Data.Services
+@using BlazorForms.Utils
 @inject IFieldService FieldService
 @using Blazorise
 @using Field = BlazorForms.Data.Models.Field
 
 
-@if(Field is not null)
+@if (Field is not null)
 {
-   <div class="card card-form" @onmouseover="StartEditing" @onmouseout="StopEditing">
-      <div class="card-body">
-         <div class="d-flex gap-2">
-            @if (isEditing)
+   <div class="card card-form" tabindex="0" @onmousedown="OnMouseDown" @onmouseleave="OnMouseOut">
+      <div class="card-body" style="min-height: 100px">
+         <div class="row py-2">
+            @if (IsEditing)
             {
-               <TextEdit Text="@Field.Title" Placeholder="Question"/>
-               <Select @bind-SelectedValue="@FieldType">
-                  <SelectItem Value="@FieldType.MultiSelection">Multi Selection</SelectItem>
-                  <SelectItem Value="@FieldType.PositiveInteger">Positive Integer</SelectItem>
-                  <SelectItem Value="@FieldType.SingleLineString">Single Line Answer</SelectItem>
-                  <SelectItem Value="@FieldType.PositiveInteger">Positive Number</SelectItem>
-               </Select>
+               <div class="col-8">
+                  <TextEdit Text="@Field.Title" TextChanged="@OnTitleChanged" Placeholder="Question"/>
+               </div>
+               <div class="col-4">
+                  <Select class="col-4" TValue="FieldType" SelectedValue="@Field.Type" SelectedValueChanged="@OnSelectTypeChange">
+                     @foreach (FieldType fieldType in Enum.GetValues(typeof(FieldType)))
+                     {
+                        <SelectItem Value="@fieldType">@fieldType.ReadableName()</SelectItem>
+                     }
+                  </Select>
+               </div>
             }
             else
             {
                <span>@(Field.Title ?? "Question")</span>
             }
          </div>
-      </div>
-      <div class="card-footer gap-2">
-         <div class="d-flex flex-wrap align-items-center gap-2">
-            <button class="btn btn-outline-secondary rounded btn-sm" @onclick="DeleteField">
-               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                  <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
-                  <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
-               </svg>
-            </button>
-            <Switch TValue="bool">Required</Switch>
-         </div>
 
+         @if (Field.Type is FieldType.Checkbox or FieldType.MultiSelection)
+         {
+            <div class="d-flex flex-column gap-2">
+               @if (Field.Options.Any())
+               {
+                  <div class="d-flex flex-column gap-2">
+                     @foreach (var option in Field.Options)
+                     {
+                        <div class="option-item d-flex align-items-center">
+                           <input type="@GetFieldType" class="form-check-input me-2" disabled/>
+                           <input type="text" class="form-control form-control-sm me-2" value="@option.Value"/>
+                           <button type="button" class="btn close rounded-circle" @onclick="() => RemoveOption(option.Id)">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                                 <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                              </svg>
+                           </button>
+                        </div>
+                     }
+                  </div>
+               }
+               <div>
+                  <button class="button-60" role="button" @onclick="AddQuestion">Add</button>
+               </div>
+            </div>
+         }
+         @if (Field.Type == FieldType.SingleLineString)
+         {
+            <input type="text" class="border-0 border-bottom bg-white px-0" disabled placeholder="Short answer text"/>
+         }
+         @if (Field.Type == FieldType.MultiLineText)
+         {
+            <input type="text" class="border-0 border-bottom bg-white px-0" disabled placeholder="Long answer text"/>
+         }
+         @if (Field.Type == FieldType.PositiveInteger)
+         {
+            <input type="text" class="border-0 border-bottom bg-white px-0" disabled placeholder="Positive number"/>
+         }
+      </div>
+      <div class="card-footer">
+         <FieldFooter FieldId="@FieldId" OnDelete="NotifyParent" OnShowInTable="UpdateOnShowInTable" ShowInTable="@Field.ShowInTable"></FieldFooter>
       </div>
    </div>
 }
 
 @code {
    [Parameter] public Guid FieldId { get; set; }
-   [Parameter] public EventCallback<Guid> OnChange { get; set; }
+   [Parameter] public EventCallback<Guid> OnDelete { get; set; }
+   private FieldType FieldType { get; set; }
    private Field? Field { get; set; }
+   private bool IsEditing { get; set; } = false;
 
+   protected override async Task OnParametersSetAsync() => Field = await FieldService.FindFieldByIdASync(FieldId);
 
-   public FieldType FieldType { get; set; }
-
-   private async Task DeleteField()
+   private async Task NotifyParent()
    {
       await FieldService.DeleteFieldAsync(FieldId);
-      await NotifyParent();
+      await OnDelete.InvokeAsync(FieldId);
    }
 
-   protected override async Task OnParametersSetAsync()
+   string GetFieldType => Field?.Type == FieldType.MultiSelection ? "radio" : "checkbox";
+
+   private void OnMouseDown(MouseEventArgs e) => IsEditing = true;
+
+   private void OnMouseOut(MouseEventArgs e) => IsEditing = false;
+
+   private async Task RemoveOption(Guid optionId) => await FieldService.RemoveQuestion(optionId);
+
+   private async Task AddQuestion() => await FieldService.AddQuestion(FieldId);
+
+   private async Task UpdateField()
    {
-      Field = await FieldService.FindFieldByIdASync(FieldId);
+      if (Field is null) return;
+      await FieldService.UpdateFieldAsync(Field);
+      StateHasChanged();
    }
 
-   private async Task NotifyParent() => await OnChange.InvokeAsync(FieldId);
-   private bool isEditing { get; set; } = false;
-
-   private void StartEditing()
+   async Task OnTitleChanged(string value)
    {
-      isEditing = true;
+      if (Field is null) return;
+      Field.Title = value;
+      await UpdateField();
    }
 
-   private void StopEditing()
+   async Task OnSelectTypeChange(FieldType fieldType)
    {
-      isEditing = false;
+      if (Field is null) return;
+      Field.Type = fieldType;
+      await UpdateField();
    }
+
+   private async Task UpdateOnShowInTable(bool value)
+   {
+      if (Field is null) return;
+      Field.ShowInTable = value;
+      await UpdateField();
+   }
+
 }

@@ -69,4 +69,9 @@ public class TemplateService : ITemplateService
             .Where(t => t.Id == templateId)
             .ExecuteUpdateAsync(e => e.SetProperty(t => t.Description, description));
     }
+
+    public async Task<IList<Template>> FindTemplatesByAuthor(string authorId)
+    {
+        return await _context.Templates.Where(e => e.AuthorId == authorId).ToListAsync();
+    }
 }
