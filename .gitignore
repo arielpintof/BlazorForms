@@ -14,3 +14,9 @@ riderModule.iml
 .vs/ProjectEvaluation/blazorforms.strings.v9.bin
 *.user
 *.pubxml
+*.db-shm
+*.db-wal
+*.db
+*.db
+*.db
+Data/app.db
