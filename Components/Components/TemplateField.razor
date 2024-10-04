@@ -14,15 +14,23 @@
             @if (IsEditing)
             {
                <div class="col-8">
-                  <TextEdit Text="@Field.Title" TextChanged="@OnTitleChanged" Placeholder="Question"/>
+                  <Field>
+                     <FieldLabel>Title</FieldLabel>
+                     <TextEdit Text="@Field.Title" TextChanged="@OnTitleChanged" Placeholder="Question"/>
+                  </Field>
+
                </div>
                <div class="col-4">
-                  <Select class="col-4" TValue="FieldType" SelectedValue="@Field.Type" SelectedValueChanged="@OnSelectTypeChange">
-                     @foreach (FieldType fieldType in Enum.GetValues(typeof(FieldType)))
-                     {
-                        <SelectItem Value="@fieldType">@fieldType.ReadableName()</SelectItem>
-                     }
-                  </Select>
+                  <Field>
+                     <FieldLabel>Question Type</FieldLabel>
+                     <Select class="col-4" TValue="FieldType" SelectedValue="@Field.Type" SelectedValueChanged="@OnSelectTypeChange">
+                        @foreach (FieldType fieldType in Enum.GetValues(typeof(FieldType)))
+                        {
+                           <SelectItem Value="@fieldType">@fieldType.ReadableName()</SelectItem>
+                        }
+                     </Select>
+                  </Field>
+
                </div>
             }
             else
@@ -30,18 +38,17 @@
                <span>@(Field.Title ?? "Question")</span>
             }
          </div>
-
-         @if (Field.Type is FieldType.Checkbox or FieldType.MultiSelection)
+         @switch (Field.Type)
          {
-            <div class="d-flex flex-column gap-2">
-               @if (Field.Options.Any())
+            case FieldType.Checkbox or FieldType.MultiSelection:
+               if (Field.Options.Any())
                {
                   <div class="d-flex flex-column gap-2">
                      @foreach (var option in Field.Options)
                      {
                         <div class="option-item d-flex align-items-center">
                            <input type="@GetFieldType" class="form-check-input me-2" disabled/>
-                           <input type="text" class="form-control form-control-sm me-2" value="@option.Value"/>
+                           <input type="text" class="form-control form-control-sm me-2" value="@option.Value" @onchange="(e) => InputValueChange(e, option)"/>
                            <button type="button" class="btn close rounded-circle" @onclick="() => RemoveOption(option.Id)">
                               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
                                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
@@ -51,23 +58,25 @@
                      }
                   </div>
                }
+
                <div>
                   <button class="button-60" role="button" @onclick="AddQuestion">Add</button>
                </div>
-            </div>
+               break;
+
+            case FieldType.SingleLineString:
+               <input type="text" class="border-0 border-bottom bg-white px-0" disabled placeholder="Short answer text"/>
+               break;
+
+            case FieldType.MultiLineText:
+               <input type="text" class="border-0 border-bottom bg-white px-0" disabled placeholder="Long answer text"/>
+               break;
+
+            case FieldType.PositiveInteger:
+               <input type="text" class="border-0 border-bottom bg-white px-0" disabled placeholder="Positive number"/>
+               break;
          }
-         @if (Field.Type == FieldType.SingleLineString)
-         {
-            <input type="text" class="border-0 border-bottom bg-white px-0" disabled placeholder="Short answer text"/>
-         }
-         @if (Field.Type == FieldType.MultiLineText)
-         {
-            <input type="text" class="border-0 border-bottom bg-white px-0" disabled placeholder="Long answer text"/>
-         }
-         @if (Field.Type == FieldType.PositiveInteger)
-         {
-            <input type="text" class="border-0 border-bottom bg-white px-0" disabled placeholder="Positive number"/>
-         }
+
       </div>
       <div class="card-footer">
          <FieldFooter FieldId="@FieldId" OnDelete="NotifyParent" OnShowInTable="UpdateOnShowInTable" ShowInTable="@Field.ShowInTable"></FieldFooter>
@@ -125,6 +134,15 @@
    {
       if (Field is null) return;
       Field.ShowInTable = value;
+      await UpdateField();
+   }
+
+   private async Task InputValueChange(ChangeEventArgs e, Option option)
+   {
+      if (Field is null) return;
+      var index = Field.Options.IndexOf(option);
+      Field.Options[index].Value = e.Value.ToString();
+      //Console.WriteLine($"Valor del option en la lista: {Field.Options.SingleOrDefault(e => e.Id == option.Id).Value}");
       await UpdateField();
    }
 
