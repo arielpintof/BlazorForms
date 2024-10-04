@@ -3,3 +3,13 @@ obj/
 /packages/
 riderModule.iml
 /_ReSharper.Caches/
+*.v2
+*.sqlite
+*.json
+*.vsidx
+.vs/BlazorForms/v17/.suo
+.vs/BlazorForms/v17/.wsuo
+.vs/ProjectEvaluation/blazorforms.metadata.v9.bin
+.vs/ProjectEvaluation/blazorforms.projects.v9.bin
+.vs/ProjectEvaluation/blazorforms.strings.v9.bin
+*.user
