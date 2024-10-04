@@ -7,13 +7,10 @@ public class Field
     public string? Description { get; set; }
     public bool ShowInTable { get; set; }
     public int Order { get; set; }
-
     public Guid TemplateId { get; set; }
-    public Template Template { get; set; }
+    public Template Template { get; set; } = null!;
     public FieldType Type { get; set; }
-    
-    public IList<string>? Options { get; set; }
-    public string? CorrectAnswer { get; set; }
+    public IList<Option> Options { get; set; } = new List<Option>();
 }
 
 public enum FieldType

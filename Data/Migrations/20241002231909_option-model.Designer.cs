@@ -3,6 +3,7 @@ using System;
 using BlazorForms.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorForms.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241002231909_option-model")]
+    partial class optionmodel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -87,6 +90,9 @@ namespace BlazorForms.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("CorrectAnswer")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
@@ -118,7 +124,7 @@ namespace BlazorForms.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<Guid>("FieldId")
+                    b.Property<Guid?>("FieldId")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Value")
@@ -129,7 +135,7 @@ namespace BlazorForms.Migrations
 
                     b.HasIndex("FieldId");
 
-                    b.ToTable("Options");
+                    b.ToTable("Option");
                 });
 
             modelBuilder.Entity("BlazorForms.Data.Models.Template", b =>
@@ -299,13 +305,9 @@ namespace BlazorForms.Migrations
 
             modelBuilder.Entity("BlazorForms.Data.Models.Option", b =>
                 {
-                    b.HasOne("BlazorForms.Data.Models.Field", "Field")
+                    b.HasOne("BlazorForms.Data.Models.Field", null)
                         .WithMany("Options")
-                        .HasForeignKey("FieldId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Field");
+                        .HasForeignKey("FieldId");
                 });
 
             modelBuilder.Entity("BlazorForms.Data.Models.Template", b =>
