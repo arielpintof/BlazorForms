@@ -11,4 +11,5 @@ public class Template
     public ApplicationUser Author { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public IList<Field> Fields { get; set; } = new List<Field>();
+    public IList<Comment> Comments { get; set; } = new List<Comment>();
 }

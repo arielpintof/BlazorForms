@@ -11,6 +11,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Field> Fields { get; set; }
     public DbSet<Option> Options { get; set; }
 
+    public DbSet<Comment> Comments { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);
@@ -25,5 +27,11 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithMany(e => e.Options)
             .HasForeignKey(e => e.FieldId)
             .IsRequired();
+
+        builder.Entity<Comment>()
+            .HasOne(e => e.Template)
+            .WithMany(e => e.Comments)
+            .HasForeignKey(e => e.TemplateId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
