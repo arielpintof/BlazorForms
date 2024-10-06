@@ -1,0 +1,50 @@
+﻿@using BlazorForms.Data.Models
+@using BlazorForms.Data.Services
+@inject IFieldService FieldService
+@using Blazorise
+@using Field = BlazorForms.Data.Models.Field
+
+@if (Field is not null)
+{
+   <div class="card card-form">
+      
+      <div class="card-body">
+         <div class="card-title">
+            <h5>@Field.Title</h5>
+         </div>
+         <h6 class="card-subtitle mb-2 text-muted pt-1">Question description</h6>
+         <div class="pt-2">
+            @if (Field.Type == FieldType.MultiSelection)
+            {
+            <RadioGroup TValue="string" Name="options" Orientation="Orientation.Vertical">
+               @foreach (var option in Field.Options)
+               {
+               <Radio Value="@option.Value">@option.Value</Radio>
+               }
+            </RadioGroup>
+            }
+            @if (Field.Type == FieldType.PositiveInteger)
+            {
+               <input type="number" placeholder="Enter a number" class="form form-control w-50"/>
+            }
+            @if (Field.Type == FieldType.SingleLineString)
+            {
+               <input type="text" placeholder="Enter your answer" class="form form-control w-75"/>
+            }
+         </div>
+         
+      </div>
+         
+     
+   </div>
+}
+
+@code {
+   [Parameter] public Guid FieldId { get; set; }
+   private Field? Field { get; set; }
+
+   protected override async Task OnParametersSetAsync() => Field = await FieldService.FindFieldByIdASync(FieldId);
+
+   string GetFieldType => Field?.Type == FieldType.MultiSelection ? "radio" : "checkbox";
+
+}

@@ -1,0 +1,49 @@
+﻿@page "/form/{TemplateId}/fill"
+@using BlazorForms.Data.Models
+@using BlazorForms.Data.Services
+@inject ITemplateService TemplateService
+@using BlazorForms.Components.Components
+
+
+@if (Template is null)
+{
+   <span>loading...</span>
+   <PageTitle>Form...</PageTitle>
+}
+else
+{
+   <PageTitle>@Template.Name</PageTitle>
+   
+   <div class="container-lg pb-5">
+      <div class="row justify-content-center">
+         <div class="col-md-8">
+            <TemplateHeader Title="@Template.Name" Description="@Template.Description"/>
+            <div class="d-flex flex-column gap-2 py-3">
+               @foreach (var field in Template.Fields)
+               {
+                  <QuestionField FieldId="field.Id"/>
+               }
+            </div>
+            <div>
+               <button class="btn btn-primary px-4">Send</button>
+            </div>
+         </div>
+      </div>
+      
+   </div>
+}
+
+@code {
+   [Parameter] public string TemplateId { get; set; } = null!;
+   private Template? Template { get; set; }
+   private string? MarkdownContent { get; set; } = string.Empty;
+
+   protected override async Task OnParametersSetAsync()
+   {
+      var id = Guid.Parse(TemplateId);
+      Template = await TemplateService.FindTemplateByIdAsync(id);
+      if (Template is null) return;
+      MarkdownContent = Template.Description;
+   }
+
+}
