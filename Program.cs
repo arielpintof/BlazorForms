@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using BlazorForms.Components;
 using BlazorForms.Components.Account;
 using BlazorForms.Data;
+using BlazorForms.Data.Hub;
 using BlazorForms.Data.Services;
 using Blazorise;
 using Blazorise.Bootstrap5;
@@ -46,7 +47,12 @@ builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.Requ
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
 builder.Services
     .AddScoped<ITemplateService, TemplateService>()
-    .AddScoped<IFieldService, FieldService>();
+    .AddScoped<IFieldService, FieldService>()
+    .AddScoped<ICommentService, CommentService>()
+    .AddScoped<ICommentNotificationService, CommentNotificationService>();
+
+builder.Services.AddSignalR();
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -62,6 +68,7 @@ else
     app.UseHsts();
 }
 
+app.UseCors(p => p.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
@@ -72,5 +79,5 @@ app.MapRazorComponents<App>()
 
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
-
+app.MapHub<CommentHub>("/commentHub");
 app.Run();
