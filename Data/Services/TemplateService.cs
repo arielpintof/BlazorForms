@@ -74,4 +74,16 @@ public class TemplateService : ITemplateService
     {
         return await _context.Templates.Where(e => e.AuthorId == authorId).ToListAsync();
     }
+
+    public async Task DeleteTemplateAsync(Guid templateId)
+    {
+        //await _context.Templates.Where(e => e.Id == templateId).ExecuteDeleteAsync();
+        var template = await _context.Templates.SingleOrDefaultAsync(e => e.Id == templateId);
+        if (template is null) return;
+        
+        _context.Templates.Remove(template);
+        await _context.SaveChangesAsync();
+    }
+        
+    
 }
