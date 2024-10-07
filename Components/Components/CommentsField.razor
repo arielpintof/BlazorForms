@@ -1,0 +1,96 @@
+﻿@using BlazorForms.Data.Models
+@using Microsoft.AspNetCore.SignalR.Client
+@using BlazorForms.Data
+@using BlazorForms.Data.Services
+@using Microsoft.AspNetCore.Identity
+@inject NavigationManager Navigation
+@inject ICommentService CommentService
+@inject AuthenticationStateProvider AuthenticationState
+@inject UserManager<ApplicationUser> UserManager
+@implements IAsyncDisposable
+
+<div class="card card-form">
+   <div class="card-body">
+      <div class="card-title">
+         <h5>Comments</h5>
+      </div>
+      <hr>
+      <div class="mb-3">
+         <textarea @bind="NewComment" class="form-control" placeholder="Enter your comment" rows="3"></textarea>
+      </div>
+      <div class="d-flex justify-content-end">
+         <button class="btn btn-primary px-4 btn-sm" @onclick="SubmitComment">Send</button>
+      </div>
+   </div>
+   
+   @foreach (var comment in Comments.OrderByDescending(e=> e.Date))
+   {
+      <div class="comment-card d-flex flex-column gap-3">
+         <div class="d-flex gap-2 align-items-center">
+            <div class="icon-circle">
+               @(UserManager.FindByIdAsync(comment.AuthorId).Result.Email[0])
+            </div>
+            <div class="d-flex flex-column">
+               <div class="comment-author fw-bold">@(UserManager.FindByIdAsync(comment.AuthorId).Result.Email)</div>
+               <div class="comment-date fw-lighter">@comment.Date.ToLocalTime().ToString("g")</div>
+            </div>
+         </div>
+         <div class="comment-message">@comment.Message</div>
+
+      </div>
+   }
+</div>
+
+@code {
+   
+   [Parameter] public Guid TemplateId { get; set; }
+   private HubConnection? Connection { get; set; }
+   private string NewComment { get; set; } = string.Empty;
+   private string? UserId { get; set; }
+   private List<Comment> Comments { get; set; } = [];
+
+   protected override async Task OnInitializedAsync()
+   {
+      var state = await AuthenticationState.GetAuthenticationStateAsync();
+      if (state.User.Identity is { IsAuthenticated: true })
+      {
+         UserId = UserManager.GetUserId(state.User);
+      }
+
+      Comments = await CommentService.FindCommentByTemplateId(TemplateId);
+      Connection = new HubConnectionBuilder()
+         .WithUrl(Navigation.ToAbsoluteUri("/commentHub"))
+         .Build();
+
+      await Connection.StartAsync();
+      await Connection.InvokeAsync("JoinTemplateGroup", TemplateId);
+
+      Connection.On<Comment>("ReceiveComment", async comment =>
+      {
+         await InvokeAsync(() =>
+         {
+            Comments.Add(comment);
+            StateHasChanged();
+         });
+      });
+   }
+
+   private async Task SubmitComment()
+   {
+      if (string.IsNullOrWhiteSpace(NewComment) || UserId is null || Connection is null) return;
+
+      var comment = await CommentService.AddComment(TemplateId, UserId, NewComment);
+      await Connection.InvokeAsync("SendCommentToGroup", comment);
+      NewComment = string.Empty;
+   }
+
+   public async ValueTask DisposeAsync()
+   {
+      if (Connection != null)
+      {
+         await Connection.StopAsync();
+         await Connection.DisposeAsync();
+      }
+   }
+
+}

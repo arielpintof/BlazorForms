@@ -1,4 +1,6 @@
-﻿namespace BlazorForms.Data.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace BlazorForms.Data.Models;
 
 public class Field
 {
@@ -8,9 +10,12 @@ public class Field
     public bool ShowInTable { get; set; }
     public int Order { get; set; }
     public Guid TemplateId { get; set; }
-    public Template Template { get; set; } = null!;
+   
     public FieldType Type { get; set; }
     public IList<Option> Options { get; set; } = new List<Option>();
+    
+    [JsonIgnore]
+    public Template Template { get; set; } = null!;
 }
 
 public enum FieldType

@@ -1,4 +1,6 @@
-﻿namespace BlazorForms.Data.Models;
+﻿using System.Text.Json.Serialization;
+
+namespace BlazorForms.Data.Models;
 
 public class Comment
 {
@@ -9,5 +11,7 @@ public class Comment
     public DateTime Date { get; set; }
     
     public Guid TemplateId { get; set; } 
+    
+    [JsonIgnore]
     public Template Template { get; set; } = null!;
 }

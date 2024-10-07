@@ -45,6 +45,7 @@ public class TemplateService : ITemplateService
         return await _context.Templates
             .Include(t => t.Fields)
             .Include(t => t.Author)
+            .Include(t => t.Comments)
             //.AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == id);
     }
@@ -84,6 +85,4 @@ public class TemplateService : ITemplateService
         _context.Templates.Remove(template);
         await _context.SaveChangesAsync();
     }
-        
-    
 }
