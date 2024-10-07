@@ -4,7 +4,6 @@
 }
 
 .option-item {
-    background-color: #f8f9fa;
     padding: 8px;
     border-radius: 4px;
     transition: background-color 0.3s ease;
@@ -20,7 +19,7 @@
 
 .custom-radio {
     position: relative;
-    width: 18px; /* Define el tamaño del radio */
+    width: 18px;
     height: 18px;
     -webkit-appearance: none;
     -moz-appearance: none;
