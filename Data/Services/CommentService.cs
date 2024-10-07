@@ -7,12 +7,10 @@ namespace BlazorForms.Data.Services;
 public class CommentService : ICommentService
 {
     private readonly ApplicationDbContext _context;
-    private readonly IHubContext<CommentHub> _commentHub;
-
-    public CommentService(ApplicationDbContext context, IHubContext<CommentHub> commentHub)
+    
+    public CommentService(ApplicationDbContext context)
     {
         _context = context;
-        _commentHub = commentHub;
     }
 
     public async Task<Comment> AddComment(Guid templateId, string authorId, string message)
@@ -35,5 +33,20 @@ public class CommentService : ICommentService
     public async Task<List<Comment>> FindCommentByTemplateId(Guid templateId)
     {
         return await _context.Comments.Where(e => e.TemplateId == templateId).ToListAsync();
+    }
+
+    public async Task DeleteComment(Comment comment)
+    {
+        _context.Comments.Remove(comment);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteCommentById(Guid commentId)
+    {
+        var comment = await _context.Comments.SingleOrDefaultAsync(e => e.Id == commentId);
+        if (comment is null) return;
+
+        _context.Comments.Remove(comment);
+        await _context.SaveChangesAsync();
     }
 }
