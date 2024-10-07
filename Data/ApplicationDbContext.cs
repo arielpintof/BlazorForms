@@ -10,8 +10,8 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Template> Templates { get; set; }
     public DbSet<Field> Fields { get; set; }
     public DbSet<Option> Options { get; set; }
-
     public DbSet<Comment> Comments { get; set; }
+    public DbSet<Like> Likes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -31,6 +31,12 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
         builder.Entity<Comment>()
             .HasOne(e => e.Template)
             .WithMany(e => e.Comments)
+            .HasForeignKey(e => e.TemplateId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Like>()
+            .HasOne(e => e.Template)
+            .WithMany(e => e.Likes)
             .HasForeignKey(e => e.TemplateId)
             .OnDelete(DeleteBehavior.Cascade);
     }

@@ -3,6 +3,7 @@ using System;
 using BlazorForms.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorForms.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241007034717_add-like-table-and-properties-to-template")]
+    partial class addliketableandpropertiestotemplate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -62,6 +65,9 @@ namespace BlazorForms.Migrations
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("TEXT");
 
+                    b.Property<Guid?>("TemplateId")
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("TwoFactorEnabled")
                         .HasColumnType("INTEGER");
 
@@ -77,6 +83,8 @@ namespace BlazorForms.Migrations
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
+
+                    b.HasIndex("TemplateId");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -188,10 +196,6 @@ namespace BlazorForms.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("AllowedResponderIds")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("AuthorId")
@@ -348,6 +352,13 @@ namespace BlazorForms.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("BlazorForms.Data.ApplicationUser", b =>
+                {
+                    b.HasOne("BlazorForms.Data.Models.Template", null)
+                        .WithMany("AllowedResponders")
+                        .HasForeignKey("TemplateId");
+                });
+
             modelBuilder.Entity("BlazorForms.Data.Models.Comment", b =>
                 {
                     b.HasOne("BlazorForms.Data.Models.Template", "Template")
@@ -474,6 +485,8 @@ namespace BlazorForms.Migrations
 
             modelBuilder.Entity("BlazorForms.Data.Models.Template", b =>
                 {
+                    b.Navigation("AllowedResponders");
+
                     b.Navigation("Comments");
 
                     b.Navigation("Fields");

@@ -1,15 +1,11 @@
 ﻿@page "/template/{TemplateId:guid}"
 @using BlazorForms.Data
-@using BlazorForms.Data.Hub
 @using BlazorForms.Data.Models
 @using BlazorForms.Data.Services
 @using Microsoft.AspNetCore.Identity
-@using Microsoft.AspNetCore.SignalR
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager Navigation
-@inject IHubContext<CommentHub> CommentHub
 @inject ICommentService CommentService
-@inject ICommentNotificationService NotificationService
 @inject AuthenticationStateProvider AuthenticationState
 @inject UserManager<ApplicationUser> UserManager
 @implements IAsyncDisposable
@@ -19,31 +15,31 @@
 
 @if (UserId != null)
 {
-<div class="mb-3">
-   <textarea @bind="_newComment" class="form-control" placeholder="Escribe tu comentario aquí..." rows="3"></textarea>
-</div>
-<button class="btn btn-primary" @onclick="SubmitComment">Enviar comentario</button>
+   <div class="mb-3">
+      <textarea @bind="NewComment" class="form-control" placeholder="Escribe tu comentario aquí..." rows="3"></textarea>
+   </div>
+   <button class="btn btn-primary" @onclick="SubmitComment">Enviar comentario</button>
 }
 
 <hr/>
 
 <div class="comment-section">
-   @foreach (var comment in comments.OrderByDescending(e=> e.Date))
+   @foreach (var comment in CommentList.OrderByDescending(e => e.Date))
    {
-   <div class="comment-card">
-      <div class="comment-author">@(UserManager.FindByIdAsync(comment.AuthorId).Result.Email)</div>
-      <div class="comment-message">@comment.Message</div>
-      <div class="comment-date">@comment.Date.ToLocalTime().ToString("g")</div>
-   </div>
+      <div class="comment-card">
+         <div class="comment-author">@(UserManager.FindByIdAsync(comment.AuthorId).Result.Email)</div>
+         <div class="comment-message">@comment.Message</div>
+         <div class="comment-date">@comment.Date.ToLocalTime().ToString("g")</div>
+      </div>
    }
 </div>
 
 @code {
    [Parameter] public Guid TemplateId { get; set; }
    private string? UserId { get; set; }
-   private List<Comment> comments { get; set; }= [];
-   private string _newComment = string.Empty;
-   public HubConnection? _connection { get; set; }
+   private List<Comment> CommentList { get; set; } = [];
+   private string NewComment { get; set; }= string.Empty;
+   private HubConnection? Connection { get; set; }
 
    protected override async Task OnInitializedAsync()
    {
@@ -52,40 +48,45 @@
       {
          UserId = UserManager.GetUserId(state.User);
       }
-
-      comments = await CommentService.FindCommentByTemplateId(TemplateId);
-      _connection = new HubConnectionBuilder()
+      
+      CommentList = await CommentService.FindCommentByTemplateId(TemplateId);
+      await InitHubConnectionAsync();
+   }
+   
+   private async Task InitHubConnectionAsync()
+   {
+      Connection = new HubConnectionBuilder()
          .WithUrl(Navigation.ToAbsoluteUri("/commentHub"))
          .Build();
 
-      await _connection.StartAsync();
-      await _connection.InvokeAsync("JoinTemplateGroup", TemplateId);
+      await Connection.StartAsync();
+      await Connection.InvokeAsync("JoinTemplateGroup", TemplateId);
 
-      // Escuchar eventos del hub
-      _connection.On<Comment>("ReceiveComment", comment =>
+      Connection.On<Comment>("ReceiveComment", async comment =>
       {
-         Console.WriteLine("Comment received");
-         comments.Add(comment);
-         Console.WriteLine($"comment count: {comments.Count}");
-         InvokeAsync(StateHasChanged);
+         await InvokeAsync(() =>
+         {
+            CommentList.Add(comment);
+            StateHasChanged();
+         });
       });
    }
 
    private async Task SubmitComment()
    {
-      if (string.IsNullOrWhiteSpace(_newComment) || UserId is null || _connection is null) return;
+      if (string.IsNullOrWhiteSpace(NewComment) || UserId is null || Connection is null) return;
 
-      var comment = await CommentService.AddComment(TemplateId, UserId, _newComment);
-      await _connection.InvokeAsync("SendCommentToGroup", comment);
-      _newComment = string.Empty;
+      var comment = await CommentService.AddComment(TemplateId, UserId, NewComment);
+      await Connection.InvokeAsync("SendCommentToGroup", comment);
+      NewComment = string.Empty;
    }
 
    public async ValueTask DisposeAsync()
    {
-      if (_connection != null)
+      if (Connection != null)
       {
-         await _connection.StopAsync();
-         await _connection.DisposeAsync();
+         await Connection.StopAsync();
+         await Connection.DisposeAsync();
       }
    }
 

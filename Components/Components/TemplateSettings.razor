@@ -1,5 +1,108 @@
-﻿<h3>TemplateSettings</h3>
+﻿@using BlazorForms.Data
+@using Blazorise
+@using Blazorise.Components
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<ApplicationUser> UserManager
+
+<div class="card card-form mt-4">
+   <div class="card-body border-0" style="min-height: 100px">
+      <div class="card-title">
+         <h3>Settings</h3>
+         <hr>
+         <div class="px-3">
+            <div class="row">
+               <div class="col d-flex flex-column justify-content-center">
+                  <h6 class="mb-1">Visibility</h6>
+                  <p style="font-size: 14px; color: darkgray">Made your template public to everyone</p>
+               </div>
+               <div class="col d-flex justify-content-end">
+                  <Switch TValue="bool"></Switch>
+               </div>
+            </div>
+            <hr>
+            <div class="row">
+               <div class="col d-flex flex-column justify-content-center">
+                  <h6 class="mb-1">Fillout access</h6>
+                  <p style="font-size: 14px; color: darkgray">
+                     Specify who can answer your form
+                  </p>
+               </div>
+               <div class="col d-flex justify-content-end">
+                  <div>
+                     <Select TValue="int">
+                        <SelectItem Value="1">All authenticated users</SelectItem>
+                        <SelectItem Value="1">Custom users</SelectItem>
+                     </Select>
+                  </div>
+               </div>
+            </div>
+            <div class="row px-4 ">
+               <div class="d-flex gap-2">
+                  <Autocomplete TItem="@ApplicationUser"
+                                TValue="string"
+                                Data="Users"
+                                TextField="@((e) => e.Email)"
+                                ValueField="@((e) => e.Id)"
+                                @bind-SelectedValue="@SelectedSearchUsers"
+                                @bind-SelectedText="SelectedAutoCompleteText"
+                                Placeholder="Find an user..."
+                                Filter="AutocompleteFilter.StartsWith"
+                                FreeTyping
+                                CustomFilter="@(( item, searchValue ) => item.Email.IndexOf( searchValue, 0, StringComparison.CurrentCultureIgnoreCase ) >= 0 )"
+                                Style="width: 350px"
+                  >
+                  </Autocomplete>
+                  <button class="btn btn-primary btn-sm px-3">Add</button>
+               </div>
+               <hr class="my-2">
+               <div class="d-flex flex-column gap-2">
+                  <div class="row">
+                     <div class="d-flex gap-2 align-items-center col">
+                        <div class="icon-circle">
+                           e
+                        </div>
+                        <div class="d-flex flex-column">
+                           <span class="comment-author fw-bold" style="font-size: 14px" >example@gmail.com</span>
+                           <span class="comment-date fw-lighter" style="font-size: 14px">Collaborator</span>
+                        </div>
+                     </div>
+                     <div class="col d-flex justify-content-end">
+                        <button class="btn btn-danger btn-sm my-1">Delete</button>
+                     </div>
+                  </div>
+
+                  <div class="row">
+                     <div class="d-flex gap-2 align-items-center col">
+                        <div class="icon-circle">
+                           e
+                        </div>
+                        <div class="d-flex flex-column">
+                           <span class="comment-author fw-bold" style="font-size: 14px" >example@gmail.com</span>
+                           <span class="comment-date fw-lighter" style="font-size: 14px">Collaborator</span>
+                        </div>
+                     </div>
+                     <div class="col d-flex justify-content-end">
+                        <button class="btn btn-danger btn-sm my-1">Delete</button>
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
 
 @code {
-   
+   public IEnumerable<ApplicationUser> Users { get; set; }
+
+   protected override async Task OnInitializedAsync()
+   {
+      Users = await UserManager.Users.ToListAsync();
+      Console.WriteLine(Users.Count());
+   }
+
+   public string SelectedSearchUsers { get; set; }
+   public string SelectedAutoCompleteText { get; set; }
+
 }

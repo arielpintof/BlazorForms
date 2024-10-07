@@ -12,9 +12,6 @@
 <PageTitle>@(Template is null ? "Loading" : Template.Name)</PageTitle>
 
 
-
-
-
 @if (Template is null)
 {
    <span>loading...</span>
@@ -37,17 +34,15 @@ else
                            <div class="editable-header mb-2 @(IsEditing ? "editing" : "")" @onclick="StartEditing">
                               @if (IsEditing)
                               {
-                              <input @bind="Template.Name"
-                                     @bind:event="oninput"
-                                     @onblur="StopEditing"
-                                     @onkeydown="HandleKeyDown"
-                                     @ref="_inputElement"/>
-
-
+                                 <input @bind="Template.Name"
+                                        @bind:event="oninput"
+                                        @onblur="StopEditing"
+                                        @onkeydown="HandleKeyDown"
+                                        @ref="_inputElement"/>
                               }
                               else
                               {
-                              <h2 class="card-title">@(Template.Name ?? "Untitled Form")</h2>
+                                 <h2 class="card-title">@(Template.Name ?? "Untitled Form")</h2>
                               }
                            </div>
                            <Markdown Value="@MarkdownValue" ValueChanged="@OnMarkdownValueChanged" MinHeight="200px">
@@ -91,7 +86,7 @@ else
                      <div class="d-flex flex-column gap-2 py-3 ">
                         @foreach (var field in Template.Fields)
                         {
-                        <TemplateField FieldId="field.Id" OnDelete="StateHasChanged"/>
+                           <TemplateField FieldId="field.Id" OnDelete="StateHasChanged"/>
                         }
                      </div>
                      <CommentsField TemplateId="@Template.Id"/>
@@ -100,12 +95,12 @@ else
                      <TextEdit></TextEdit>
                   </TabPanel>
                   <TabPanel Name="settings">
-                     <TextEdit></TextEdit>
+                     <TemplateSettings></TemplateSettings>
                   </TabPanel>
                </Content>
             </Tabs>
-            
-            
+
+
          </div>
       </div>
    </div>
@@ -116,7 +111,7 @@ else
    private bool IsEditing { get; set; }
    private ElementReference _inputElement;
    private Template? Template { get; set; }
-   private string? MarkdownValue { get; set; } 
+   private string? MarkdownValue { get; set; }
    private string MarkdownContent { get; set; } = string.Empty;
 
    private string RenderMarkdown(string markdown)
@@ -170,4 +165,5 @@ else
       Template = await TemplateService.FindTemplateByIdAsync(Guid.Parse(TemplateId));
       StateHasChanged();
    }
+
 }
