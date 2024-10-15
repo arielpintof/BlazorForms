@@ -44,8 +44,11 @@ public class TemplateService : ITemplateService
     {
         return await _context.Templates
             .Include(t => t.Fields)
+            .ThenInclude(e => e.Options)
             .Include(t => t.Author)
             .Include(t => t.Comments)
+            .Include(t => t.Responses)
+            .ThenInclude(e => e.FieldResponses)
             //.AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == id);
     }

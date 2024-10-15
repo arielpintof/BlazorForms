@@ -16,4 +16,5 @@ public class Template
     public IList<Field> Fields { get; set; } = new List<Field>();
     public IList<Comment> Comments { get; set; } = new List<Comment>();
     public IList<Like> Likes { get; set; } = new List<Like>();
+    public IList<FormResponse> Responses { get; set; } = new List<FormResponse>();
 }
