@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Update="Data\app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true"/>
+        <None Update="Data\app.db" CopyToOutputDirectory="PreserveNewest" ExcludeFromSingleFile="true" />
     </ItemGroup>
 
     <ItemGroup>
@@ -16,12 +16,30 @@
         <PackageReference Include="Blazorise.Components" Version="1.6.1" />
         <PackageReference Include="Blazorise.Icons.FontAwesome" Version="1.6.1" />
         <PackageReference Include="Blazorise.Markdown" Version="1.6.1" />
+        <PackageReference Include="CloudinaryDotNet" Version="1.26.2" />
+        <PackageReference Include="dotenv.net" Version="3.2.1" />
         <PackageReference Include="Markdig" Version="0.37.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.8"/>
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8"/>
+        <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.8" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.8" />
         <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.8" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.8" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="Locales\TemplateSettingRes.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>TemplateSettingRes.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="Locales\TemplateSettingRes.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>TemplateSettingRes.resx</DependentUpon>
+      </Compile>
     </ItemGroup>
 
 </Project>

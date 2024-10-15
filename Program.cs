@@ -49,12 +49,22 @@ builder.Services
     .AddScoped<ITemplateService, TemplateService>()
     .AddScoped<IFieldService, FieldService>()
     .AddScoped<ICommentService, CommentService>()
-    .AddScoped<ICommentNotificationService, CommentNotificationService>();
+    .AddScoped<ICommentNotificationService, CommentNotificationService>()
+    .AddScoped<IResponseFormService, ResponseFormservice>();
 
 builder.Services.AddSignalR();
 builder.Services.AddCors();
+builder.Services.AddLocalization();
+builder.Services.AddControllers();
 
 var app = builder.Build();
+
+string[] supportedCultures = ["en-US", "es-ES"];
+var localizationOptions = new RequestLocalizationOptions()
+    .SetDefaultCulture(supportedCultures[0])
+    .AddSupportedCultures(supportedCultures)
+    .AddSupportedUICultures(supportedCultures);
+app.UseRequestLocalization(localizationOptions);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -73,6 +83,7 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 app.UseAntiforgery();
+app.MapControllers();
 
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

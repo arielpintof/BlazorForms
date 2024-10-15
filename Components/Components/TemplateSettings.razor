@@ -1,20 +1,23 @@
 ﻿@using BlazorForms.Data
+@using BlazorForms.Locales
 @using Blazorise
 @using Blazorise.Components
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Localization
 @inject UserManager<ApplicationUser> UserManager
+@inject IStringLocalizer<TemplateSettingRes> Localization
 
 <div class="card card-form mt-4">
    <div class="card-body border-0" style="min-height: 100px">
       <div class="card-title">
-         <h3>Settings</h3>
+         <h3>@Localization["SettingsTitle"]</h3>
          <hr>
          <div class="px-3">
             <div class="row">
                <div class="col d-flex flex-column justify-content-center">
-                  <h6 class="mb-1">Visibility</h6>
-                  <p style="font-size: 14px; color: darkgray">Made your template public to everyone</p>
+                  <h6 class="mb-1">@Localization["Visibility"]</h6>
+                  <p style="font-size: 14px; color: darkgray">@Localization["VisibilityParagraph"]</p>
                </div>
                <div class="col d-flex justify-content-end">
                   <Switch TValue="bool"></Switch>
@@ -23,9 +26,9 @@
             <hr>
             <div class="row">
                <div class="col d-flex flex-column justify-content-center">
-                  <h6 class="mb-1">Fillout access</h6>
+                  <h6 class="mb-1">@Localization["FillOutAccess"]</h6>
                   <p style="font-size: 14px; color: darkgray">
-                     Specify who can answer your form
+                     @Localization["FillOutParagraph"]
                   </p>
                </div>
                <div class="col d-flex justify-content-end">
