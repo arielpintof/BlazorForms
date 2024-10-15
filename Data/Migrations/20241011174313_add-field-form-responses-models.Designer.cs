@@ -3,6 +3,7 @@ using System;
 using BlazorForms.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace BlazorForms.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241011174313_add-field-form-responses-models")]
+    partial class addfieldformresponsesmodels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.8");
@@ -142,7 +145,6 @@ namespace BlazorForms.Migrations
             modelBuilder.Entity("BlazorForms.Data.Models.FieldResponse", b =>
                 {
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("FieldId")
@@ -163,8 +165,6 @@ namespace BlazorForms.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("FieldId");
-
-                    b.HasIndex("FormResponseId");
 
                     b.HasIndex("SelectedOptionId");
 
@@ -437,7 +437,7 @@ namespace BlazorForms.Migrations
 
                     b.HasOne("BlazorForms.Data.Models.FormResponse", "FormResponse")
                         .WithMany("FieldResponses")
-                        .HasForeignKey("FormResponseId")
+                        .HasForeignKey("Id")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
