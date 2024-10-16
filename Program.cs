@@ -9,6 +9,9 @@ using BlazorForms.Data.Services;
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
+using CloudinaryDotNet;
+using CloudinaryDotNet.Actions;
+using dotenv.net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -91,4 +94,7 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 app.MapHub<CommentHub>("/commentHub");
+DotEnv.Load(options: new DotEnvOptions(probeForEnv: true));
+var cloudinary = new Cloudinary(Environment.GetEnvironmentVariable("CLOUDINARY_URL"));
+cloudinary.Api.Secure = true;
 app.Run();

@@ -88,4 +88,13 @@ public class TemplateService : ITemplateService
         _context.Templates.Remove(template);
         await _context.SaveChangesAsync();
     }
+
+    public async Task UpdateImageUrl(Guid templateId, string imageUrl)
+    {
+        var template = await _context.Templates.SingleOrDefaultAsync(e => e.Id == templateId);
+        if (template is null) return;
+
+        template.ImageUrl = imageUrl;
+        await _context.SaveChangesAsync();
+    }
 }

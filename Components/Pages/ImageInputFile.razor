@@ -1,0 +1,22 @@
+﻿@page "/upload"
+@inject ITemplateService TemplateService
+@using BlazorForms.Data.Services
+
+<h3>ImageInputFile</h3>
+
+<InputFile OnChange="LoadFile"/>
+
+@code {
+   const long maxFileSize = 1024 * 1024 * 10; // 10MB
+
+   private async Task LoadFile(InputFileChangeEventArgs e)
+   {
+      var file = e.File;
+      if (file is null) return;
+
+      var fileStream = file.OpenReadStream(maxFileSize);
+      var url = await new UploadService().UploadImage(file.Name, fileStream);
+      await TemplateService.UpdateImageUrl(Guid.Parse("319cba42-a8aa-4e38-ac44-89895112e512"), url);
+   }
+
+}

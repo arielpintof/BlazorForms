@@ -8,6 +8,7 @@ public class Template
     public string? Name { get; set; }
     public string? Description { get; set; }
     public string AuthorId { get; set; }
+    public string? ImageUrl { get; set; }
     public bool IsPublic { get; set; } = false;
     public bool IsRestrictedResponse { get; set; } = false;
     public IList<string> AllowedResponderIds { get; set; } = new List<string>();
