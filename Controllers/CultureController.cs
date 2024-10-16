@@ -7,7 +7,7 @@ namespace BlazorForms.Controllers;
 public class CultureController : Controller
 {
     
-    public IActionResult Set(string culture, string redirectUri)
+    public IActionResult Set(string? culture, string redirectUri)
     {
         if (culture is null) return LocalRedirect(redirectUri);
         
