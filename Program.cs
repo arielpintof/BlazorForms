@@ -10,7 +10,6 @@ using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
 using CloudinaryDotNet;
-using CloudinaryDotNet.Actions;
 using dotenv.net;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +42,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddIdentityCore<ApplicationUser>(options => options.SignIn.RequireConfirmedAccount = true)
+    .AddRoles<IdentityRole>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddSignInManager()
     .AddDefaultTokenProviders();
@@ -53,7 +53,8 @@ builder.Services
     .AddScoped<IFieldService, FieldService>()
     .AddScoped<ICommentService, CommentService>()
     .AddScoped<ICommentNotificationService, CommentNotificationService>()
-    .AddScoped<IResponseFormService, ResponseFormservice>();
+    .AddScoped<IResponseFormService, ResponseFormservice>()
+    .AddScoped<IRoleService, RoleService>();
 
 builder.Services.AddSignalR();
 builder.Services.AddCors();
