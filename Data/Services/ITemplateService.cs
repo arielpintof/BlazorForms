@@ -12,4 +12,5 @@ public interface ITemplateService
     Task<IList<Template>> FindTemplatesByAuthor(string authorId);
     Task DeleteTemplateAsync(Guid templateId);
     Task UpdateImageUrl(Guid templateId, string imageUrl);
+    Task UpdateTemplate(Template template);
 }

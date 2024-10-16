@@ -97,4 +97,13 @@ public class TemplateService : ITemplateService
         template.ImageUrl = imageUrl;
         await _context.SaveChangesAsync();
     }
+
+    public async Task UpdateTemplate(Template updatedTemplate)
+    {
+        var template = await _context.Templates.SingleOrDefaultAsync(e => e.Id == updatedTemplate.Id);
+        if (template is null) return;
+        
+        _context.Entry(template).CurrentValues.SetValues(updatedTemplate);
+        await _context.SaveChangesAsync();
+    }
 }
