@@ -1,4 +1,6 @@
 ﻿@using BlazorForms.Data
+@using BlazorForms.Data.Models
+@using BlazorForms.Data.Services
 @using BlazorForms.Locales
 @using Blazorise
 @using Blazorise.Components
@@ -6,6 +8,7 @@
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.Extensions.Localization
 @inject UserManager<ApplicationUser> UserManager
+@inject ITemplateService TemplateService
 @inject IStringLocalizer<TemplateSettingRes> Localization
 
 <div class="card card-form mt-4">
@@ -20,7 +23,7 @@
                   <p style="font-size: 14px; color: darkgray">@Localization["VisibilityParagraph"]</p>
                </div>
                <div class="col d-flex justify-content-end">
-                  <Switch TValue="bool"></Switch>
+                  <Switch TValue="bool" Checked="@Template.IsPublic" CheckedChanged="@OnCheckedChanged"></Switch>
                </div>
             </div>
             <hr>
@@ -98,6 +101,7 @@
 
 @code {
    public IEnumerable<ApplicationUser> Users { get; set; }
+   [Parameter] public Template Template { get; set; }
 
    protected override async Task OnInitializedAsync()
    {
@@ -107,5 +111,12 @@
 
    public string SelectedSearchUsers { get; set; }
    public string SelectedAutoCompleteText { get; set; }
+   
+   async Task OnCheckedChanged(bool value)
+   {
+      Console.WriteLine("Switch Changed");
+      Template.IsPublic = value;
+      await TemplateService.UpdateTemplate(Template);
+   }
 
 }
