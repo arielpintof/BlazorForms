@@ -1,0 +1,181 @@
+﻿@page "/survey/{TemplateId:guid}"
+@page "/form/{TemplateId:guid}"
+@using BlazorForms.Data
+@using BlazorForms.Data.Models
+@using BlazorForms.Data.Services
+@using Microsoft.AspNetCore.Identity
+@inject ITemplateService TemplateService
+@inject AuthenticationStateProvider AuthenticationState
+@inject UserManager<ApplicationUser> UserManager
+@inject IResponseFormService ResponseFormService
+
+
+@if (Template == null)
+{
+   <p>Loading...</p>
+}
+else
+{
+   <PageTitle>@Template.Name</PageTitle>
+   <div class="container-lg pb-5">
+      <div class="row justify-content-center">
+         <div class="col-md-8">
+            <TemplateHeader Title="@Template.Name" Description="@Template.Description"/>
+
+            <EditForm Model="@_responses" OnSubmit="@GenerateFormResponse">
+               <DataAnnotationsValidator/>
+               <ValidationSummary/>
+               <div class="d-flex flex-column gap-2 py-3">
+                  @foreach (var field in Template.Fields)
+                  {
+                     <div class="card card-form">
+                        <div class="card-body" style="min-height: 100px">
+                           <div class="card-title pb-2">
+                              <h5>@field.Title</h5>
+                           </div>
+
+                           @if (_responses.TryGetValue(field.Id, out var response))
+                           {
+                              @if (field.Type == FieldType.SingleLineString || field.Type == FieldType.MultiLineText)
+                              {
+                                 <InputTextArea @bind-Value="response.TextResponse" class="form-control"/>
+                                 @field.Id
+                              }
+                              else if (field.Type == FieldType.PositiveInteger)
+                              {
+                                 <InputNumber @bind-Value="response.IntegerResponse" class="form-control"/>
+                                 @field.Id
+                              }
+                              else if (field.Type == FieldType.MultiSelection)
+                              {
+                                 <InputRadioGroup @bind-Value="@response.SelectedOptionId"
+                                                  Name="@response.FieldId.ToString()"
+                                                  class="form-check">
+                                    @foreach (var option in field.Options)
+                                    {
+                                       <div class="py-1">
+                                          <InputRadio Value="option.Id" class="form-check-input ms-2 pointer"/>
+                                          <label class="form-check-label px-1">@option.Value</label>
+                                       </div>
+                                    }
+                                 </InputRadioGroup>
+                              }
+                           }
+                        </div>
+                     </div>
+                  }
+                  <button type="submit" class="btn btn-primary">Submit</button>
+               </div>
+            </EditForm>
+            <div class="mt-4">
+               <h5>Valores Actuales:</h5>
+               <ul>
+                  @foreach (var response in _responses)
+                  {
+                     <li>
+                        <strong>Campo ID: </strong>@response.Key<br/>
+                        <strong>response ID: </strong>@response.Value.Id<br/>
+                        <strong>Respuesta: </strong>@DisplayValue(response.Value)
+                     </li>
+                  }
+               </ul>
+            </div>
+         </div>
+      </div>
+   </div>
+}
+
+@code {
+   [Parameter] public Guid TemplateId { get; set; }
+   private string? UserId { get; set; }
+   private Template? Template { get; set; }
+   private readonly Dictionary<Guid, FieldResponse> _responses = new();
+
+   protected override async Task OnInitializedAsync()
+   {
+      var state = await AuthenticationState.GetAuthenticationStateAsync();
+      Template = await TemplateService.FindTemplateByIdAsync(TemplateId);
+      if (state.User.Identity is { IsAuthenticated: true })
+      {
+         UserId = UserManager.GetUserId(state.User);
+         var hasCompleted = Template != null && Template.Responses.Any(e => e.ResponderId.Equals(UserId));
+         if (hasCompleted)
+         {
+            Console.WriteLine("El usuario ya ha respondido esta encuesta");
+         }
+      }
+
+      if (Template != null)
+      {
+         foreach (var field in Template.Fields)
+         {
+            _responses[field.Id] = new FieldResponse
+            {
+               Id = Guid.NewGuid(),
+               FieldId = field.Id,
+            };
+         }
+      }
+   }
+
+   private string DisplayValue(FieldResponse response) => 
+      ResponseTextResponse(response, out var textResponse) ? textResponse : "Sin respuesta";
+   
+
+   private bool ResponseTextResponse(FieldResponse response, out string textResponse)
+   {
+      if (!string.IsNullOrEmpty(response.TextResponse))
+      {
+         {
+            textResponse = response.TextResponse;
+            return true;
+         }
+      }
+      if (response.IntegerResponse != null)
+      {
+         {
+            textResponse = response.IntegerResponse.ToString();
+            return true;
+         }
+      }
+      if (response.SelectedOptionId != null)
+      {
+         {
+            textResponse = $"Respuesta: {Template.Fields.SingleOrDefault(e => e.Id == response.FieldId).Options.SingleOrDefault(e => e.Id == response.SelectedOptionId).Value}";
+            return true;
+         }
+      }
+
+      textResponse = null;
+      return false;
+   }
+
+   private async void GenerateFormResponse()
+   {
+      if (UserId is null) return;
+
+      var formResponse = new FormResponse
+      {
+         Id = Guid.NewGuid(),
+         TemplateId = TemplateId,
+         ResponderId = UserId,
+         SubmittedAt = DateTime.UtcNow,
+      };
+      foreach (var fieldResponse in _responses.Select(response => new FieldResponse
+               {
+                  Id = response.Value.Id,
+                  FieldId = response.Key,
+                  FormResponseId = formResponse.Id,
+                  TextResponse = response.Value.TextResponse,
+                  IntegerResponse = response.Value.IntegerResponse,
+                  SelectedOptionId = response.Value.SelectedOptionId
+               }))
+      {
+         formResponse.FieldResponses.Add(fieldResponse);
+      }
+
+      await ResponseFormService.SubmitResponse(formResponse);
+
+   }
+
+}
