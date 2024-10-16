@@ -1,22 +1,45 @@
 ﻿@page "/upload"
 @inject ITemplateService TemplateService
+@using BlazorForms.Data
 @using BlazorForms.Data.Services
-
+@using BlazorForms.Utils
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@inject IRoleService RoleService
+@inject AuthenticationStateProvider AuthenticationState
+@inject UserManager<ApplicationUser> UserManager
+@attribute [Authorize(Roles = "admin")]  
 <h3>ImageInputFile</h3>
 
-<InputFile OnChange="LoadFile"/>
+<InputFile OnChange="LoadFile" accept=".png,.jpg,.jpeg" class="form-control"/>
 
+<button class="btn btn-primary" @onclick="CreateAdminRole">Create admin role</button>
+
+<button class="btn btn-primary" @onclick="AssignAdminRole">Admin role to user</button>
 @code {
-   const long maxFileSize = 1024 * 1024 * 10; // 10MB
+   const long MaxFileSize = 1024 * 1024 * 10; // 10MB
 
    private async Task LoadFile(InputFileChangeEventArgs e)
    {
       var file = e.File;
-      if (file is null) return;
-
-      var fileStream = file.OpenReadStream(maxFileSize);
+      //if (file is null) return;
+      var extension = Path.GetExtension(file.Name);
+      if (!extension.IsExtensionAllowed()) return;
+      var fileStream = file.OpenReadStream(MaxFileSize);
       var url = await new UploadService().UploadImage(file.Name, fileStream);
       await TemplateService.UpdateImageUrl(Guid.Parse("319cba42-a8aa-4e38-ac44-89895112e512"), url);
    }
 
+   private async Task CreateAdminRole() => await RoleService.Create("admin");
+
+   private async Task AssignAdminRole()
+   {
+      var state = await AuthenticationState.GetAuthenticationStateAsync();
+      if (state.User.Identity is { IsAuthenticated: true })
+      {
+         var userId = UserManager.GetUserId(state.User);
+         if (userId is null) return;
+         await RoleService.AssignRoleToUser(userId, "admin");
+      }
+   }
 }

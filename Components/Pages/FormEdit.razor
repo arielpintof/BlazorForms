@@ -7,7 +7,9 @@
 @using Blazorise
 @using Markdig
 @using BlazorForms.Components.Components
-
+@using BlazorForms.Utils
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize]
 
 <PageTitle>@(Template is null ? "Loading" : Template.Name)</PageTitle>
 
@@ -29,6 +31,10 @@ else
                </Items>
                <Content>
                   <TabPanel Name="questions">
+                     @if (Template.ImageUrl is not null)
+                     {
+                        <img src="@Template.ImageUrl" class="img-fluid rounded mt-4" alt="Banner" style="height: 200px; object-fit: cover; width: 100%" >
+                     }
                      <div class="card card-form mt-4">
                         <div class="card-body">
                            <div class="editable-header mb-2 @(IsEditing ? "editing" : "")" @onclick="StartEditing">
@@ -76,6 +82,9 @@ else
                                  </MarkdownToolbarButton>
                               </Toolbar>
                            </Markdown>
+
+                           <label class="pt-1">Banner</label>
+                           <InputFile OnChange="LoadFile" accept=".png,.jpg,.jpeg" class="form-control"/>
                         </div>
                         <div class="card-footer">
                            <div class="d-flex flex-wrap gap-2">
@@ -95,7 +104,7 @@ else
                      <TextEdit></TextEdit>
                   </TabPanel>
                   <TabPanel Name="settings">
-                     <TemplateSettings></TemplateSettings>
+                     <TemplateSettings Template="@Template"></TemplateSettings>
                   </TabPanel>
                </Content>
             </Tabs>
@@ -164,6 +173,19 @@ else
       await FieldService.AddFieldToTemplateAsync(Guid.Parse(TemplateId));
       Template = await TemplateService.FindTemplateByIdAsync(Guid.Parse(TemplateId));
       StateHasChanged();
+   }
+   
+   const long MaxFileSize = 1024 * 1024 * 2; // 2MB
+   
+   private async Task LoadFile(InputFileChangeEventArgs e)
+   {
+      var file = e.File;
+      //if (file is null) return;
+      var extension = Path.GetExtension(file.Name);
+      if (!extension.IsExtensionAllowed()) return;
+      var fileStream = file.OpenReadStream(MaxFileSize);
+      var url = await new UploadService().UploadImage(file.Name, fileStream);
+      await TemplateService.UpdateImageUrl(Guid.Parse(TemplateId), url);
    }
 
 }
