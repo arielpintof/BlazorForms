@@ -29,34 +29,7 @@
             </div>
             <hr/>
             <div class="row">
-               <div class="col d-flex flex-column justify-content-center">
-                  <h6 class="mb-1">Tags</h6>
-                  <p style="font-size: 14px; color: darkgray">Some paragraph</p>
-               </div>
-               <div class="col d-flex justify-content-end">
-                  <Autocomplete TItem="@Tag"
-                                TValue="string"
-                                Data="@Tags"
-                                TextField="@((item) => item.Name)"
-                                ValueField="@(( item ) => item.Id.ToString())"
-                                Placeholder="Enter a tag"
-                                SelectionMode="AutocompleteSelectionMode.Multiple"
-                                Filter="AutocompleteFilter.StartsWith"
-                                FreeTyping="true"
-                                @bind-SelectedValues="MultipleSelectionData"
-                                @bind-SelectedTexts="MultipleSelectionTextsHandler">
-                  </Autocomplete>
-                  
-               </div>
-               <Field Horizontal>
-
-                  <FieldBody ColumnSize="ColumnSize.Is12">
-                     Selected Texts: @(MultipleSelectionTextsHandler == null ? null : string.Join(',', MultipleSelectionTextsHandler))
-                  </FieldBody>
-                  <FieldBody ColumnSize="ColumnSize.Is12">
-                     Selected Values: @(MultipleSelectionData == null ? null : string.Join(',', MultipleSelectionData))
-                  </FieldBody>
-               </Field>
+               <AutoCompleteTags TemplateId="Template.Id" TemplateTags="Template.Tags"/>
             </div>
             <hr>
             <div class="row">
@@ -133,29 +106,10 @@
 @code {
    [Parameter] public Template Template { get; set; } = null!;
    public IEnumerable<ApplicationUser> Users { get; set; } = null!;
-   public IEnumerable<Tag> Tags { get; set; } = new List<Tag>();
-   private List<string> MultipleSelectionTexts { get; set; } = new List<string>();
-   List<string> MultipleSelectionData;
-   private List<string> MultipleSelectionTextsHandler
-   {
-      get => MultipleSelectionTexts;
-      set
-      {
-         if (MultipleSelectionTexts == value) return;
-         MultipleSelectionTexts = value;
-         InvokeAsync(async () => await OnTagsChanged());
-      }
-   }
-
+   
    protected override async Task OnInitializedAsync()
    {
       Users = await UserManager.Users.ToListAsync();
-      Tags = await TagService.FindAllTags();
-      MultipleSelectionData = [];
-      foreach (var tag in Template.Tags)
-      {
-         MultipleSelectionData.Add(tag.Id.ToString());
-      }
       await base.OnInitializedAsync();
    }
 
@@ -169,6 +123,6 @@
       await TemplateService.UpdateTemplate(Template);
    }
 
-   async Task OnTagsChanged() => await TagService.AddTagsToTemplateAsync(Template.Id, MultipleSelectionTextsHandler);
+   
 
 }

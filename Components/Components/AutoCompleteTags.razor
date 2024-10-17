@@ -1,4 +1,8 @@
-﻿@using Blazorise
+﻿@using BlazorForms.Data.Models
+@using BlazorForms.Data.Services
+@using Blazorise.Components
+@inject ITagService TagService
+
 <div class="col d-flex flex-column justify-content-center">
    <h6 class="mb-1">Tags</h6>
    <p style="font-size: 14px; color: darkgray">Some paragraph</p>
@@ -16,9 +20,38 @@
                  @bind-SelectedValues="MultipleSelectionData"
                  @bind-SelectedTexts="MultipleSelectionTextsHandler">
    </Autocomplete>
-
 </div>
 
 @code {
+   [Parameter] public IEnumerable<Tag> TemplateTags { get; set; }
+   [Parameter] public Guid TemplateId { get; set; }
+   private IEnumerable<Tag> Tags { get; set; }
+   private List<string> MultipleSelectionTexts { get; set; } = new List<string>();
+   List<string> MultipleSelectionData;
+
+   protected override async Task OnInitializedAsync()
+   {
+      Tags = await TagService.FindAllTags();
+      MultipleSelectionData = [];
+      foreach (var tag in TemplateTags)
+      {
+         MultipleSelectionData.Add(tag.Id.ToString());
+      }
+
+      await base.OnInitializedAsync();
+   }
+
+   private List<string> MultipleSelectionTextsHandler
+   {
+      get => MultipleSelectionTexts;
+      set
+      {
+         if (MultipleSelectionTexts == value) return;
+         MultipleSelectionTexts = value;
+         InvokeAsync(async () => await OnTagsChanged());
+      }
+   }
+
+   async Task OnTagsChanged() => await TagService.AddTagsToTemplateAsync(TemplateId, MultipleSelectionTextsHandler);
 
 }
