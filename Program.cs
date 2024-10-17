@@ -54,7 +54,8 @@ builder.Services
     .AddScoped<ICommentService, CommentService>()
     .AddScoped<ICommentNotificationService, CommentNotificationService>()
     .AddScoped<IResponseFormService, ResponseFormservice>()
-    .AddScoped<IRoleService, RoleService>();
+    .AddScoped<IRoleService, RoleService>()
+    .AddScoped<ITagService, TagService>();
 
 builder.Services.AddSignalR();
 builder.Services.AddCors();

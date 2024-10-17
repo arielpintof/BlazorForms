@@ -15,6 +15,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
     public DbSet<Like> Likes { get; set; }
     public DbSet<FormResponse> FormResponses { get; set; }
     public DbSet<FieldResponse> FieldResponses { get; set; }
+    public DbSet<Tag> Tags { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -54,6 +55,10 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
             .WithMany(e => e.FieldResponses)
             .HasForeignKey(e => e.FormResponseId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.Entity<Tag>()
+            .HasMany(e => e.Templates)
+            .WithMany(e => e.Tags);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

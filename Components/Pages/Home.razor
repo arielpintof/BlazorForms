@@ -5,6 +5,7 @@
 @using BlazorForms.Locales
 @using Microsoft.AspNetCore.Identity
 @using Microsoft.Extensions.Localization
+@using BlazorForms.Components.Components
 @inject AuthenticationStateProvider AuthenticationState
 @inject UserManager<ApplicationUser> UserManager
 @inject ITemplateService TemplateService
@@ -52,6 +53,14 @@
                }
                </tbody>
             </table>
+         </div>
+         
+         <h5 class="fw-bold">Your latest Templates</h5>
+         <div class="d-flex gap-2">
+            @foreach (var template in Templates.OrderBy(e => e.CreatedAt))
+            {
+               <TemplateCard Template="@template"></TemplateCard>
+            }
          </div>
       </div>
    </Authorized>

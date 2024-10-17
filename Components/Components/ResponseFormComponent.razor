@@ -20,6 +20,10 @@ else
    <div class="container-lg pb-5">
       <div class="row justify-content-center">
          <div class="col-md-8">
+            @if (Template.ImageUrl is not null)
+            {
+               <img src="@Template.ImageUrl" class="img-fluid rounded my-4 " alt="Banner" style="height: 200px; object-fit: cover; width: 100%">
+            }
             <TemplateHeader Title="@Template.Name" Description="@Template.Description"/>
 
             <EditForm Model="@_responses" OnSubmit="@GenerateFormResponse">
@@ -39,12 +43,10 @@ else
                               @if (field.Type == FieldType.SingleLineString || field.Type == FieldType.MultiLineText)
                               {
                                  <InputTextArea @bind-Value="response.TextResponse" class="form-control"/>
-                                 @field.Id
                               }
                               else if (field.Type == FieldType.PositiveInteger)
                               {
                                  <InputNumber @bind-Value="response.IntegerResponse" class="form-control"/>
-                                 @field.Id
                               }
                               else if (field.Type == FieldType.MultiSelection)
                               {
@@ -118,9 +120,9 @@ else
       }
    }
 
-   private string DisplayValue(FieldResponse response) => 
+   private string DisplayValue(FieldResponse response) =>
       ResponseTextResponse(response, out var textResponse) ? textResponse : "Sin respuesta";
-   
+
 
    private bool ResponseTextResponse(FieldResponse response, out string textResponse)
    {
@@ -131,6 +133,7 @@ else
             return true;
          }
       }
+
       if (response.IntegerResponse != null)
       {
          {
@@ -138,6 +141,7 @@ else
             return true;
          }
       }
+
       if (response.SelectedOptionId != null)
       {
          {
@@ -175,7 +179,6 @@ else
       }
 
       await ResponseFormService.SubmitResponse(formResponse);
-
    }
 
 }

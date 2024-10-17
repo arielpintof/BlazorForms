@@ -10,6 +10,7 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject ITemplateService TemplateService
 @inject IStringLocalizer<TemplateSettingRes> Localization
+@inject ITagService TagService
 
 <div class="card card-form mt-4">
    <div class="card-body border-0" style="min-height: 100px">
@@ -25,6 +26,37 @@
                <div class="col d-flex justify-content-end">
                   <Switch TValue="bool" Checked="@Template.IsPublic" CheckedChanged="@OnCheckedChanged"></Switch>
                </div>
+            </div>
+            <hr/>
+            <div class="row">
+               <div class="col d-flex flex-column justify-content-center">
+                  <h6 class="mb-1">Tags</h6>
+                  <p style="font-size: 14px; color: darkgray">Some paragraph</p>
+               </div>
+               <div class="col d-flex justify-content-end">
+                  <Autocomplete TItem="@Tag"
+                                TValue="string"
+                                Data="@Tags"
+                                TextField="@((item) => item.Name)"
+                                ValueField="@(( item ) => item.Id.ToString())"
+                                Placeholder="Enter a tag"
+                                SelectionMode="AutocompleteSelectionMode.Multiple"
+                                Filter="AutocompleteFilter.StartsWith"
+                                FreeTyping="true"
+                                @bind-SelectedValues="MultipleSelectionData"
+                                @bind-SelectedTexts="MultipleSelectionTextsHandler">
+                  </Autocomplete>
+                  
+               </div>
+               <Field Horizontal>
+
+                  <FieldBody ColumnSize="ColumnSize.Is12">
+                     Selected Texts: @(MultipleSelectionTextsHandler == null ? null : string.Join(',', MultipleSelectionTextsHandler))
+                  </FieldBody>
+                  <FieldBody ColumnSize="ColumnSize.Is12">
+                     Selected Values: @(MultipleSelectionData == null ? null : string.Join(',', MultipleSelectionData))
+                  </FieldBody>
+               </Field>
             </div>
             <hr>
             <div class="row">
@@ -55,9 +87,8 @@
                                 Placeholder="Find an user..."
                                 Filter="AutocompleteFilter.StartsWith"
                                 FreeTyping
-                                CustomFilter="@(( item, searchValue ) => item.Email.IndexOf( searchValue, 0, StringComparison.CurrentCultureIgnoreCase ) >= 0 )"
-                                Style="width: 350px"
-                  >
+                                CustomFilter="@((item, searchValue) => item.Email.IndexOf(searchValue, 0, StringComparison.CurrentCultureIgnoreCase) >= 0)"
+                                Style="width: 350px">
                   </Autocomplete>
                   <button class="btn btn-primary btn-sm px-3">Add</button>
                </div>
@@ -69,7 +100,7 @@
                            e
                         </div>
                         <div class="d-flex flex-column">
-                           <span class="comment-author fw-bold" style="font-size: 14px" >example@gmail.com</span>
+                           <span class="comment-author fw-bold" style="font-size: 14px">example@gmail.com</span>
                            <span class="comment-date fw-lighter" style="font-size: 14px">Collaborator</span>
                         </div>
                      </div>
@@ -84,7 +115,7 @@
                            e
                         </div>
                         <div class="d-flex flex-column">
-                           <span class="comment-author fw-bold" style="font-size: 14px" >example@gmail.com</span>
+                           <span class="comment-author fw-bold" style="font-size: 14px">example@gmail.com</span>
                            <span class="comment-date fw-lighter" style="font-size: 14px">Collaborator</span>
                         </div>
                      </div>
@@ -100,23 +131,44 @@
 </div>
 
 @code {
-   public IEnumerable<ApplicationUser> Users { get; set; }
-   [Parameter] public Template Template { get; set; }
+   [Parameter] public Template Template { get; set; } = null!;
+   public IEnumerable<ApplicationUser> Users { get; set; } = null!;
+   public IEnumerable<Tag> Tags { get; set; } = new List<Tag>();
+   private List<string> MultipleSelectionTexts { get; set; } = new List<string>();
+   List<string> MultipleSelectionData;
+   private List<string> MultipleSelectionTextsHandler
+   {
+      get => MultipleSelectionTexts;
+      set
+      {
+         if (MultipleSelectionTexts == value) return;
+         MultipleSelectionTexts = value;
+         InvokeAsync(async () => await OnTagsChanged());
+      }
+   }
 
    protected override async Task OnInitializedAsync()
    {
       Users = await UserManager.Users.ToListAsync();
-      Console.WriteLine(Users.Count());
+      Tags = await TagService.FindAllTags();
+      MultipleSelectionData = [];
+      foreach (var tag in Template.Tags)
+      {
+         MultipleSelectionData.Add(tag.Id.ToString());
+      }
+      await base.OnInitializedAsync();
    }
 
    public string SelectedSearchUsers { get; set; }
    public string SelectedAutoCompleteText { get; set; }
-   
+
    async Task OnCheckedChanged(bool value)
    {
       Console.WriteLine("Switch Changed");
       Template.IsPublic = value;
       await TemplateService.UpdateTemplate(Template);
    }
+
+   async Task OnTagsChanged() => await TagService.AddTagsToTemplateAsync(Template.Id, MultipleSelectionTextsHandler);
 
 }

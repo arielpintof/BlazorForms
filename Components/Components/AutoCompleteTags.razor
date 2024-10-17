@@ -1,0 +1,24 @@
+﻿@using Blazorise
+<div class="col d-flex flex-column justify-content-center">
+   <h6 class="mb-1">Tags</h6>
+   <p style="font-size: 14px; color: darkgray">Some paragraph</p>
+</div>
+<div class="col d-flex justify-content-end">
+   <Autocomplete TItem="@Tag"
+                 TValue="string"
+                 Data="@Tags"
+                 TextField="@((item) => item.Name)"
+                 ValueField="@((item) => item.Id.ToString())"
+                 Placeholder="Enter a tag"
+                 SelectionMode="AutocompleteSelectionMode.Multiple"
+                 Filter="AutocompleteFilter.StartsWith"
+                 FreeTyping="true"
+                 @bind-SelectedValues="MultipleSelectionData"
+                 @bind-SelectedTexts="MultipleSelectionTextsHandler">
+   </Autocomplete>
+
+</div>
+
+@code {
+
+}

@@ -49,6 +49,7 @@ public class TemplateService : ITemplateService
             .Include(t => t.Comments)
             .Include(t => t.Responses)
             .ThenInclude(e => e.FieldResponses)
+            .Include(e => e.Tags)
             //.AsNoTracking()
             .FirstOrDefaultAsync(t => t.Id == id);
     }
