@@ -94,9 +94,13 @@ else
                         </div>
                      </div>
                      <div class="d-flex flex-column gap-2 py-3 ">
-                        <SortableList Id="simpleList" Items="Template.Fields.OrderBy(e => e.Order).ToList()" OnUpdate="@SortList" Context="item">
+                        <SortableList Id="simpleList" Items="Template.Fields.OrderBy(e => e.Order).ToList()" 
+                                      OnUpdate="@SortList" Context="item">
                            <SortableItemTemplate>
-                              <TemplateField FieldId="@item.Id" OnDelete="StateHasChanged"/>
+                              <div class="my-2">
+                                 <TemplateField FieldId="@item.Id" OnDelete="StateHasChanged"/>
+                              </div>
+                              
                            </SortableItemTemplate>
                         </SortableList>
                      </div>
@@ -183,9 +187,9 @@ else
       await TemplateService.UpdateImageUrl(Guid.Parse(TemplateId), url);
    }
 
-   private void SortList((int oldIndex, int newIndex) indices)
+   private async Task SortList((int oldIndex, int newIndex) indices)
    {
-      // deconstruct the tuple
+      if (Template is null) return;
       var (oldIndex, newIndex) = indices;
 
       var items = Template.Fields.OrderBy(e => e.Order).ToList();
@@ -201,7 +205,13 @@ else
          items.Add(itemToMove);
       }
 
-      StateHasChanged();
+      for (var i = 0; i < items.Count; i++)
+      {
+         items[i].Order = i; 
+         await FieldService.UpdateFieldAsync(items[i]); 
+      }
+      
+      //StateHasChanged();
    }
 
 }
