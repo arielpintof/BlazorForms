@@ -60,6 +60,15 @@ namespace BlazorForms.Locales {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Answers.
+        /// </summary>
+        internal static string Answers {
+            get {
+                return ResourceManager.GetString("Answers", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Category.
         /// </summary>
         internal static string Category {
@@ -209,6 +218,15 @@ namespace BlazorForms.Locales {
         internal static string Party {
             get {
                 return ResourceManager.GetString("Party", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Questions.
+        /// </summary>
+        internal static string Questions {
+            get {
+                return ResourceManager.GetString("Questions", resourceCulture);
             }
         }
         
