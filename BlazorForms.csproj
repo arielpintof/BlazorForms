@@ -43,4 +43,8 @@
       </Compile>
     </ItemGroup>
 
+    <ItemGroup>
+      <_ContentIncludedByDefault Remove="Components\Components\SortableList\SortableList.razor" />
+    </ItemGroup>
+
 </Project>

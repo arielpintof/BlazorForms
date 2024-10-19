@@ -9,6 +9,7 @@
 @using BlazorForms.Components.Components
 @using BlazorForms.Utils
 @using Microsoft.AspNetCore.Authorization
+@using BlazorForms.Shared
 @attribute [Authorize]
 
 <PageTitle>@(Template is null ? "Loading" : Template.Name)</PageTitle>
@@ -33,7 +34,7 @@ else
                   <TabPanel Name="questions">
                      @if (Template.ImageUrl is not null)
                      {
-                        <img src="@Template.ImageUrl" class="img-fluid rounded mt-4" alt="Banner" style="height: 200px; object-fit: cover; width: 100%" >
+                        <img src="@Template.ImageUrl" class="img-fluid rounded mt-4" alt="Banner" style="height: 200px; object-fit: cover; width: 100%">
                      }
                      <div class="card card-form mt-4">
                         <div class="card-body">
@@ -93,15 +94,16 @@ else
                         </div>
                      </div>
                      <div class="d-flex flex-column gap-2 py-3 ">
-                        @foreach (var field in Template.Fields.OrderBy(e=> e.Order))
-                        {
-                           <TemplateField FieldId="field.Id" OnDelete="StateHasChanged"/>
-                        }
+                        <SortableList Id="simpleList" Items="Template.Fields.OrderBy(e => e.Order).ToList()" OnUpdate="@SortList" Context="item">
+                           <SortableItemTemplate>
+                              <TemplateField FieldId="@item.Id" OnDelete="StateHasChanged"/>
+                           </SortableItemTemplate>
+                        </SortableList>
                      </div>
                      <CommentsField TemplateId="@Template.Id"/>
                   </TabPanel>
                   <TabPanel Name="answers">
-                    <ResponsesDataGrid Responses="Template.Responses"></ResponsesDataGrid>
+                     <ResponsesDataGrid Responses="Template.Responses"></ResponsesDataGrid>
                   </TabPanel>
                   <TabPanel Name="settings">
                      <TemplateSettings Template="@Template"></TemplateSettings>
@@ -167,9 +169,9 @@ else
       Template = await TemplateService.FindTemplateByIdAsync(Guid.Parse(TemplateId));
       StateHasChanged();
    }
-   
+
    const long MaxFileSize = 1024 * 1024 * 2; // 2MB
-   
+
    private async Task LoadFile(InputFileChangeEventArgs e)
    {
       var file = e.File;
@@ -179,6 +181,27 @@ else
       var fileStream = file.OpenReadStream(MaxFileSize);
       var url = await new UploadService().UploadImage(file.Name, fileStream);
       await TemplateService.UpdateImageUrl(Guid.Parse(TemplateId), url);
+   }
+
+   private void SortList((int oldIndex, int newIndex) indices)
+   {
+      // deconstruct the tuple
+      var (oldIndex, newIndex) = indices;
+
+      var items = Template.Fields.OrderBy(e => e.Order).ToList();
+      var itemToMove = items[oldIndex];
+      items.RemoveAt(oldIndex);
+
+      if (newIndex < items.Count)
+      {
+         items.Insert(newIndex, itemToMove);
+      }
+      else
+      {
+         items.Add(itemToMove);
+      }
+
+      StateHasChanged();
    }
 
 }
