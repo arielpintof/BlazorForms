@@ -1,15 +1,40 @@
 ﻿@using BlazorForms.Components.Components
+@using BlazorForms.Data
+@using Microsoft.AspNetCore.Identity
 @inherits LayoutComponentBase
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Nav
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu/>
-    </div>
 
     <main>
         <div class="top-row px-4">
             <CultureSelector/>
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <AuthorizeView>
+                <Authorized>
+                    @if (!string.IsNullOrEmpty(UserName))
+                    {
+                    <span>
+                            Welcome, @UserName
+                        </span>
+                    }
+                    <div class="nav-item px-3">
+                        <form action="Account/Logout" method="post">
+                            <AntiforgeryToken/>
+                            <input type="hidden" name="ReturnUrl"/>
+                            <button type="submit" class="btn btn-link">
+                                Sign out
+                            </button>
+                        </form>
+                    </div>
+                </Authorized>
+                <NotAuthorized>
+                    <button class="btn btn-primary" @onclick="NavigateToRegister">Sign up</button>
+                    <NavLink class="nav-link" href="Account/Login">
+                        Log in
+                    </NavLink>
+                </NotAuthorized>
+            </AuthorizeView>
         </div>
 
         <article class="content px-4">
@@ -23,3 +48,22 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code{
+    [CascadingParameter] private AuthenticationState? Context { get; set; }
+    private string? UserName { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Context?.User.Identity?.Name != null)
+        {
+            var user = await UserManager.FindByNameAsync(Context.User.Identity.Name);
+            if (user != null)
+            {
+                UserName = user.UserName;
+            }
+        }
+    }
+
+    void NavigateToRegister() => Nav.NavigateTo("Account/Register");
+}
