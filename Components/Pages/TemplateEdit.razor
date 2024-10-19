@@ -7,9 +7,12 @@
 @using Blazorise
 @using Markdig
 @using BlazorForms.Components.Components
+@using BlazorForms.Locales
 @using BlazorForms.Utils
 @using Microsoft.AspNetCore.Authorization
 @using BlazorForms.Shared
+@using Microsoft.Extensions.Localization
+@inject IStringLocalizer<TemplateSettingRes> Localization
 @attribute [Authorize]
 
 <PageTitle>@(Template is null ? "Loading" : Template.Name)</PageTitle>
@@ -26,9 +29,9 @@ else
          <div class="col-md-8">
             <Tabs RenderMode="TabsRenderMode.LazyReload" SelectedTab="questions" Justified="true">
                <Items>
-                  <Tab Name="questions">Questions</Tab>
-                  <Tab Name="answers">Answers</Tab>
-                  <Tab Name="settings">Settings</Tab>
+                  <Tab Name="questions">@Localization["Questions"]</Tab>
+                  <Tab Name="answers">@Localization["Answers"]</Tab>
+                  <Tab Name="settings">@Localization["SettingsTitle"]</Tab>
                </Items>
                <Content>
                   <TabPanel Name="questions">
