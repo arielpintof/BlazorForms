@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using BlazorForms.Data.Enums;
 
 namespace BlazorForms.Data.Models;
 
@@ -18,11 +19,4 @@ public class Field
     public Template Template { get; set; } = null!;
 }
 
-public enum FieldType
-{
-    SingleLineString,
-    MultiLineText,
-    PositiveInteger,
-    Checkbox,
-    MultiSelection,
-}
+

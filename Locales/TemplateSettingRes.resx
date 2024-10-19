@@ -30,4 +30,58 @@
     <data name="FillOutParagraph" xml:space="preserve">
         <value>Specify who can answer your form</value>
     </data>
+    <data name="SettingsTitle" xml:space="preserve">
+        <value>Settings</value>
+    </data>
+    <data name="Category" xml:space="preserve">
+        <value>Category</value>
+    </data>
+    <data name="CategoryParagraph" xml:space="preserve">
+        <value>Select a topic for your template</value>
+    </data>
+    <data name="MultipleChoice" xml:space="preserve">
+        <value>Multiple choice</value>
+    </data>
+    <data name="CheckBoxes" xml:space="preserve">
+        <value>Check boxes</value>
+    </data>
+    <data name="Number" xml:space="preserve">
+        <value>Number</value>
+    </data>
+    <data name="ShortAnswer" xml:space="preserve">
+        <value>Short Answer</value>
+    </data>
+    <data name="Paragraph" xml:space="preserve">
+        <value>Paragraph</value>
+    </data>
+    <data name="Education" xml:space="preserve">
+        <value>Education</value>
+    </data>
+    <data name="Sport" xml:space="preserve">
+        <value>Sport</value>
+    </data>
+    <data name="Food" xml:space="preserve">
+        <value>Food</value>
+    </data>
+    <data name="Gaming" xml:space="preserve">
+        <value>Gaming</value>
+    </data>
+    <data name="Job" xml:space="preserve">
+        <value>Job</value>
+    </data>
+    <data name="Event" xml:space="preserve">
+        <value>Event</value>
+    </data>
+    <data name="Music" xml:space="preserve">
+        <value>Music</value>
+    </data>
+    <data name="Party" xml:space="preserve">
+        <value>Party</value>
+    </data>
+    <data name="Contact" xml:space="preserve">
+        <value>Contact</value>
+    </data>
+    <data name="Other" xml:space="preserve">
+        <value>Other</value>
+    </data>
 </root>

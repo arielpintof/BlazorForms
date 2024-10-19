@@ -1,4 +1,5 @@
-﻿using BlazorForms.Data.Models;
+﻿using BlazorForms.Data.Enums;
+using BlazorForms.Data.Models;
 
 namespace BlazorForms.Data.Dto;
 

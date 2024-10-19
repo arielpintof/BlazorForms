@@ -8,24 +8,27 @@
    <p style="font-size: 14px; color: darkgray">Some paragraph</p>
 </div>
 <div class="col d-flex justify-content-end">
-   <Autocomplete TItem="@Tag"
-                 TValue="string"
-                 Data="@Tags"
-                 TextField="@((item) => item.Name)"
-                 ValueField="@((item) => item.Id.ToString())"
-                 Placeholder="Enter a tag"
-                 SelectionMode="AutocompleteSelectionMode.Multiple"
-                 Filter="AutocompleteFilter.StartsWith"
-                 FreeTyping="true"
-                 @bind-SelectedValues="MultipleSelectionData"
-                 @bind-SelectedTexts="MultipleSelectionTextsHandler">
-   </Autocomplete>
+   <div class="w-100 ">
+      <Autocomplete TItem="@Tag"
+                    TValue="string"
+                    Data="@Tags"
+                    TextField="@(item => item.Name)"
+                    ValueField="@(item => item.Id.ToString())"
+                    Placeholder="Enter a tag"
+                    SelectionMode="AutocompleteSelectionMode.Multiple"
+                    Filter="AutocompleteFilter.StartsWith"
+                    FreeTyping="true"
+                    @bind-SelectedValues="MultipleSelectionData"
+                    @bind-SelectedTexts="MultipleSelectionTextsHandler">
+      </Autocomplete>
+   </div>
+
 </div>
 
 @code {
-   [Parameter] public IEnumerable<Tag> TemplateTags { get; set; }
+   [Parameter] public IEnumerable<Tag> TemplateTags { get; set; } = null!;
    [Parameter] public Guid TemplateId { get; set; }
-   private IEnumerable<Tag> Tags { get; set; }
+   private IEnumerable<Tag> Tags { get; set; } = null!;
    private List<string> MultipleSelectionTexts { get; set; } = new List<string>();
    List<string> MultipleSelectionData;
 

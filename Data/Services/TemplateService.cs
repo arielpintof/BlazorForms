@@ -49,8 +49,9 @@ public class TemplateService : ITemplateService
             .Include(t => t.Comments)
             .Include(t => t.Responses)
             .ThenInclude(e => e.FieldResponses)
-            .Include(e => e.Tags)
-            //.AsNoTracking()
+            .Include(t => t.Responses)
+            .ThenInclude(e => e.Responder)
+            .Include(t => t.Tags)
             .FirstOrDefaultAsync(t => t.Id == id);
     }
 
@@ -58,6 +59,10 @@ public class TemplateService : ITemplateService
     {
         return await _context.Templates
             .Include(t => t.Fields)
+            .ThenInclude(e => e.Options)
+            .Include(t => t.Author)
+            .Include(t => t.Comments)
+            .Include(e => e.Tags)
             .ToListAsync();
     }
 

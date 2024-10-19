@@ -24,4 +24,58 @@
     <data name="FillOutParagraph" xml:space="preserve">
         <value>Especifica quien puede responder tu formulario</value>
     </data>
+    <data name="SettingsTitle" xml:space="preserve">
+        <value>Configuración</value>
+    </data>
+    <data name="Category" xml:space="preserve">
+        <value>Categoría</value>
+    </data>
+    <data name="CategoryParagraph" xml:space="preserve">
+        <value>Selecciona una categoría para tu plantilla</value>
+    </data>
+    <data name="MultipleChoice" xml:space="preserve">
+        <value>Seleccion múltiple</value>
+    </data>
+    <data name="CheckBoxes" xml:space="preserve">
+        <value>Casillas</value>
+    </data>
+    <data name="Number" xml:space="preserve">
+        <value>Número</value>
+    </data>
+    <data name="ShortAnswer" xml:space="preserve">
+        <value>Respuesta corta</value>
+    </data>
+    <data name="Paragraph" xml:space="preserve">
+        <value>Párrafo</value>
+    </data>
+    <data name="Education" xml:space="preserve">
+        <value>Educación</value>
+    </data>
+    <data name="Sport" xml:space="preserve">
+        <value>Deporte</value>
+    </data>
+    <data name="Food" xml:space="preserve">
+        <value>Comida</value>
+    </data>
+    <data name="Gaming" xml:space="preserve">
+        <value>Videojuegos</value>
+    </data>
+    <data name="Job" xml:space="preserve">
+        <value>Trabajo</value>
+    </data>
+    <data name="Event" xml:space="preserve">
+        <value>Evento</value>
+    </data>
+    <data name="Music" xml:space="preserve">
+        <value>Música</value>
+    </data>
+    <data name="Contact" xml:space="preserve">
+        <value>Contacto</value>
+    </data>
+    <data name="Party" xml:space="preserve">
+        <value>Fiesta</value>
+    </data>
+    <data name="Other" xml:space="preserve">
+        <value>Otro</value>
+    </data>
 </root>

@@ -1,16 +1,9 @@
-﻿using BlazorForms.Data.Models;
+﻿using BlazorForms.Data.Enums;
+using BlazorForms.Data.Models;
+using BlazorForms.Data.Services;
+using BlazorForms.Locales;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Localization;
 
 namespace BlazorForms.Utils;
 
-public static class FieldTypeUtils
-{
-    public static string ReadableName(this FieldType fieldType) => fieldType switch
-    {
-        FieldType.MultiSelection => "Multiple choice",
-        FieldType.Checkbox => "Checkboxes",
-        FieldType.PositiveInteger => "Positive Integer",
-        FieldType.SingleLineString => "Short answer",
-        FieldType.MultiLineText => "Paragraph",
-        _ => "Unknown"
-    };
-}

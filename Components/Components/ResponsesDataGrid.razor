@@ -1,0 +1,17 @@
+﻿@using BlazorForms.Data.Models
+@using Blazorise.DataGrid
+
+<DataGrid TItem="FormResponse"
+          Data="@Responses"
+          @bind-SelectedRow="@SelectedResponse"
+          Responsive>
+   <DataGridCommandColumn />
+   <DataGridColumn Field="@nameof(FormResponse.Id)" Caption="#" Sortable="false" />
+   <DataGridColumn Field="@nameof(FormResponse.Responder)" Caption="Email" Editable />
+   <DataGridColumn Field="@nameof(FormResponse.SubmittedAt)" Caption="Submitted At" Editable />
+</DataGrid>
+
+@code {
+   [Parameter] public IEnumerable<FormResponse> Responses { get; set; } = null!;
+   private FormResponse? SelectedResponse { get; set; }
+}

@@ -1,9 +1,11 @@
 ﻿@page "/survey/{TemplateId:guid}"
 @page "/form/{TemplateId:guid}"
 @using BlazorForms.Data
+@using BlazorForms.Data.Enums
 @using BlazorForms.Data.Models
 @using BlazorForms.Data.Services
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
 @inject ITemplateService TemplateService
 @inject AuthenticationStateProvider AuthenticationState
 @inject UserManager<ApplicationUser> UserManager
@@ -157,13 +159,16 @@ else
    private async void GenerateFormResponse()
    {
       if (UserId is null) return;
-
+      var user = await UserManager.Users.FirstOrDefaultAsync(e => e.Id == UserId);
+      if (user is null) return;
+      
       var formResponse = new FormResponse
       {
          Id = Guid.NewGuid(),
          TemplateId = TemplateId,
          ResponderId = UserId,
          SubmittedAt = DateTime.UtcNow,
+         Responder = user,
       };
       foreach (var fieldResponse in _responses.Select(response => new FieldResponse
                {

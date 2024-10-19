@@ -1,0 +1,42 @@
+﻿@using BlazorForms.Data.Enums
+@using BlazorForms.Data.Models
+@using BlazorForms.Data.Services
+@using BlazorForms.Locales
+@using Blazorise
+@using Microsoft.Extensions.Localization
+@inject ITemplateService TemplateService
+@inject IStringLocalizer<TemplateSettingRes> Localization
+
+<div class="col d-flex flex-column justify-content-center">
+   <h6 class="mb-1">@Localization["Category"]</h6>
+   <p style="font-size: 14px; color: darkgray">@Localization["CategoryParagraph"]</p>
+</div>
+<div class="col d-flex justify-content-end">
+   <div class="w-100">
+      <Select Class="form-control-sm" TValue="TemplateCategory" SelectedValue="@(Category)"
+              SelectedValueChanged="@OnSelectTypeChange" Size="Size.Small">
+         @foreach (TemplateCategory category in Enum.GetValues(typeof(TemplateCategory)))
+         {
+            <SelectItem Value="@category">@category.ReadableName(Localization)</SelectItem>
+         }
+      </Select>
+   </div>
+</div>
+
+@code {
+   [Parameter] public Template Template { get; set; } = null!;
+   private TemplateCategory Category { get; set; }
+
+   protected override async Task OnInitializedAsync()
+   {
+      Category = Template.Category ?? TemplateCategory.Other;
+      await base.OnInitializedAsync();
+   }
+
+   async Task OnSelectTypeChange(TemplateCategory category)
+   {
+      Template.Category = category;
+      await TemplateService.UpdateTemplate(Template);
+   }
+
+}

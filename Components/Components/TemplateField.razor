@@ -1,9 +1,13 @@
-﻿@using BlazorForms.Data.Models
+﻿@using BlazorForms.Data.Enums
+@using BlazorForms.Data.Models
 @using BlazorForms.Data.Services
+@using BlazorForms.Locales
 @using BlazorForms.Utils
 @inject IFieldService FieldService
 @using Blazorise
+@using Microsoft.Extensions.Localization
 @using Field = BlazorForms.Data.Models.Field
+@inject IStringLocalizer<TemplateSettingRes> Localizer
 
 
 @if (Field is not null)
@@ -26,7 +30,7 @@
                      <Select class="col-4" TValue="FieldType" SelectedValue="@Field.Type" SelectedValueChanged="@OnSelectTypeChange">
                         @foreach (FieldType fieldType in Enum.GetValues(typeof(FieldType)))
                         {
-                           <SelectItem Value="@fieldType">@fieldType.ReadableName()</SelectItem>
+                           <SelectItem Value="@fieldType">@fieldType.ReadableName(Localizer)</SelectItem>
                         }
                      </Select>
                   </Field>

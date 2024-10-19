@@ -1,4 +1,5 @@
-﻿using BlazorForms.Data.Models;
+﻿using BlazorForms.Data.Enums;
+using BlazorForms.Data.Models;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
