@@ -21,3 +21,4 @@ riderModule.iml
 *.db
 Data/app.db
 .env
+appsettings.json
