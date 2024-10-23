@@ -1,0 +1,67 @@
+﻿@page "/search"
+@using BlazorForms.Data.Models
+@using BlazorForms.Data.Services
+@inject ITemplateService TemplateService
+<h3>Buscar Templates</h3>
+
+<div class="search-container">
+   <input type="text" @bind="_searchTerm" placeholder="Ingrese término de búsqueda..." />
+   <button @onclick="SearchTemplatesAsync">Buscar</button>
+</div>
+
+@if (IsLoading)
+{
+   <p>Cargando resultados...</p>
+}
+
+@if (SearchResults.Any())
+{
+   <h4>Resultados</h4>
+   <ul>
+      @foreach (var template in SearchResults)
+      {
+         <li>
+            <strong>@template.Name</strong> - @template.Description
+            <br />
+            <em>Campos:</em>
+            <ul>
+               @foreach (var field in template.Fields)
+               {
+                  <li>@field.Title - @field.Description</li>
+               }
+            </ul>
+            <em>Comentarios:</em>
+            <ul>
+               @foreach (var comment in template.Comments)
+               {
+                  <li>@comment.Message</li>
+               }
+            </ul>
+         </li>
+      }
+   </ul>
+}
+else if (SearchResults != null && !SearchResults.Any())
+{
+   <p>No se encontraron resultados para el término "@_searchTerm".</p>
+}
+
+@code {
+   private string _searchTerm = string.Empty;
+   private List<Template> SearchResults { get; set; } = [];
+   private bool IsLoading { get; set; } = false;
+
+   private async Task SearchTemplatesAsync()
+   {
+      if (string.IsNullOrWhiteSpace(_searchTerm))
+      {
+         SearchResults = [];
+         return;
+      }
+
+      IsLoading = true;
+      SearchResults.Clear();
+      SearchResults = await TemplateService.SearchTemplatesAsync(_searchTerm);
+      IsLoading = false;
+   }
+}
