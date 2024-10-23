@@ -13,4 +13,7 @@ public interface ITemplateService
     Task DeleteTemplateAsync(Guid templateId);
     Task UpdateImageUrl(Guid templateId, string imageUrl);
     Task UpdateTemplate(Template template);
+    Task AddAllowedUser(ApplicationUser applicationUser, Guid templateId);
+    Task RemoveAllowedUser(ApplicationUser applicationUser, Guid templateId);
+    Task<List<Template>> SearchTemplatesAsync(string searchTerm);
 }
