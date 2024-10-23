@@ -9,8 +9,6 @@ using BlazorForms.Data.Services;
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
-using CloudinaryDotNet;
-using dotenv.net;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,6 +54,7 @@ builder.Services
     .AddScoped<IResponseFormService, ResponseFormservice>()
     .AddScoped<IRoleService, RoleService>()
     .AddScoped<ITagService, TagService>();
+    .AddScoped<ITagService, TagService>()
 
 builder.Services.AddSignalR();
 builder.Services.AddCors();

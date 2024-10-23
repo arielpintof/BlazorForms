@@ -7,4 +7,5 @@ public interface ITagService
     Task<List<Tag>> FindAllTags();
     Task AddTagToTemplateAsync(Guid templateId, string tagName);
     Task AddTagsToTemplateAsync(Guid templateId, IList<string> tagNames);
+    Task<Dictionary<string, int>> GetFrequencyTagsAsync();
 }

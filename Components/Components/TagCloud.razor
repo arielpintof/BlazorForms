@@ -1,0 +1,80 @@
+﻿@page "/wordcloud"
+@using BlazorForms.Data.Services
+@using CloudinaryDotNet.Actions
+@inject ITagService TagService
+
+<div class="word-cloud-container">
+   @foreach (var word in WordFrequencies)
+   {
+      <span class="word"
+            style="font-size: @(GetFontSize(word.Value))px; color: @GetRandomColor();"
+            @onclick="() => OnWordClick(word.Key)">
+         @word.Key
+      </span>
+   }
+</div>
+
+<style>
+   .word-cloud-container {
+      width: 100%;
+      min-height: 100px;
+      padding: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 2px 10px;
+   }
+
+   .word {
+      padding: 0 5px;
+      cursor: pointer;
+      transition: transform 0.2s;
+      display: inline-block;
+   }
+
+   .word:hover {
+      transform: scale(1.1);
+   }
+</style>
+
+@code {
+   [Parameter] public Dictionary<string, int> WordFrequencies { get; set; } = new();
+
+   [Parameter] public EventCallback<string> OnWordSelected { get; set; }
+
+   protected override async Task OnInitializedAsync()
+   {
+      WordFrequencies = await TagService.GetFrequencyTagsAsync();
+   }
+
+   private readonly Random random = new();
+
+   private readonly string[] colors = new[]
+   {
+      "#2196F3", "#4CAF50", "#FF9800", "#E91E63",
+      "#9C27B0", "#3F51B5", "#009688", "#FF5722"
+   };
+
+   private int GetFontSize(int frequency)
+   {
+      const int minSize = 8;
+      const int maxSize = 36;
+
+      var normalizedFreq = Math.Log(frequency + 1);
+      var maxFreq = Math.Log(WordFrequencies.Values.Max() + 1);
+
+      return (int)(minSize + (maxSize - minSize) * (normalizedFreq / maxFreq));
+   }
+
+   private string GetRandomColor()
+   {
+      return colors[random.Next(colors.Length)];
+   }
+
+   private async Task OnWordClick(string word)
+   {
+      await OnWordSelected.InvokeAsync(word);
+   }
+
+}

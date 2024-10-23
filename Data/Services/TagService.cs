@@ -44,7 +44,7 @@ public class TagService : ITagService
                 {
                     Name = newTagName
                 };
-                
+
                 _context.Tags.Add(tag);
             }
 
@@ -61,5 +61,12 @@ public class TagService : ITagService
         }
 
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<Dictionary<string, int>> GetFrequencyTagsAsync()
+    {
+        return await _context.Templates.SelectMany(e => e.Tags)
+            .GroupBy(e => e.Name)
+            .ToDictionaryAsync(e => e.Key, e => e.Count());
     }
 }
