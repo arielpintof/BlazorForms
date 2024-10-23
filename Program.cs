@@ -53,8 +53,9 @@ builder.Services
     .AddScoped<ICommentNotificationService, CommentNotificationService>()
     .AddScoped<IResponseFormService, ResponseFormservice>()
     .AddScoped<IRoleService, RoleService>()
-    .AddScoped<ITagService, TagService>();
     .AddScoped<ITagService, TagService>()
+    .AddScoped<UploadService>()
+    .AddScoped<LuceneIndexService>();
 
 builder.Services.AddSignalR();
 builder.Services.AddCors();
@@ -62,6 +63,12 @@ builder.Services.AddLocalization();
 builder.Services.AddControllers();
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var initializer = scope.ServiceProvider.GetRequiredService<LuceneIndexService>();
+    await initializer.InitializeIndexAsync();
+}
 
 string[] supportedCultures = ["en-US", "es-ES"];
 var localizationOptions = new RequestLocalizationOptions()
@@ -95,7 +102,4 @@ app.MapRazorComponents<App>()
 // Add additional endpoints required by the Identity /Account Razor components.
 app.MapAdditionalIdentityEndpoints();
 app.MapHub<CommentHub>("/commentHub");
-DotEnv.Load(options: new DotEnvOptions(probeForEnv: true));
-var cloudinary = new Cloudinary(Environment.GetEnvironmentVariable("CLOUDINARY_URL"));
-cloudinary.Api.Secure = true;
 app.Run();
