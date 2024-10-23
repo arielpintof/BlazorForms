@@ -1,7 +1,8 @@
-﻿using BlazorForms.Data.Models;
-using Microsoft.AspNetCore.Components.Authorization;
+﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+
+using Template = BlazorForms.Data.Models.Template;
 
 namespace BlazorForms.Data.Services;
 
@@ -36,7 +37,7 @@ public class TemplateService : ITemplateService
 
         _context.Templates.Add(template);
         await _context.SaveChangesAsync();
-
+        //await _elasticClient.IndexDocumentAsync(template);
         return template;
     }
 
@@ -111,5 +112,47 @@ public class TemplateService : ITemplateService
         
         _context.Entry(template).CurrentValues.SetValues(updatedTemplate);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task AddAllowedUser(ApplicationUser applicationUser, Guid templateId )
+    {
+        var template = await _context.Templates.SingleOrDefaultAsync(e => e.Id == templateId);
+        Console.WriteLine(applicationUser.Id);
+        if (template is null) return;
+        template.AllowedResponderIds.Add(applicationUser.Id);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RemoveAllowedUser(ApplicationUser applicationUser, Guid templateId)
+    {
+        var template = await _context.Templates.SingleOrDefaultAsync(e => e.Id == templateId);
+        template?.AllowedResponderIds.Remove(applicationUser.Id);
+        await _context.SaveChangesAsync();
+    }
+    
+    public async Task<List<Template>> SearchTemplatesAsync(string searchTerm)
+    {
+        searchTerm = searchTerm.ToLower();
+        
+        var templates = await _context.Templates
+            .Where(t =>
+                
+                (t.Name != null && t.Name.ToLower().Contains(searchTerm)) ||
+                (t.Description != null && t.Description.ToLower().Contains(searchTerm)) ||
+                
+                t.Fields.Any(f =>
+                    (f.Title != null && f.Title.ToLower().Contains(searchTerm)) ||
+                    (f.Description != null && f.Description.ToLower().Contains(searchTerm))
+                ) ||
+                
+                t.Comments.Any(c =>
+                    c.Message.ToLower().Contains(searchTerm)
+                )
+            )
+            .Include(e=> e.Comments)
+            .Include(t => t.Fields)
+            .ToListAsync();
+
+        return templates;
     }
 }
