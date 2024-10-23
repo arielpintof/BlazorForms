@@ -4,9 +4,9 @@
 @inject UserManager<ApplicationUser> UserManager
 @inject AuthenticationStateProvider AuthenticationState
 
-<div class="card card-form">
-   <div class="card-header pb-3 bg-white">
-      <h2 class="py-2">@Title</h2>
+<div class="card card-form bg-primary-theme ">
+   <div class="card-header pb-3 ">
+      <h2 class="py-2 text-primary-theme">@Title</h2>
       <div>
          @((MarkupString)RenderMarkdown(Description))
       </div>

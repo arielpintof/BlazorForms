@@ -8,36 +8,43 @@
 <div class="page">
 
     <main>
-        <div class="top-row px-4">
-            <CultureSelector/>
-            <AuthorizeView>
-                <Authorized>
-                    @if (!string.IsNullOrEmpty(UserName))
-                    {
-                    <span>
-                            Welcome, @UserName
-                        </span>
-                    }
-                    <div class="nav-item px-3">
-                        <form action="Account/Logout" method="post">
-                            <AntiforgeryToken/>
-                            <input type="hidden" name="ReturnUrl"/>
-                            <button type="submit" class="btn btn-link">
-                                Sign out
-                            </button>
-                        </form>
-                    </div>
-                </Authorized>
-                <NotAuthorized>
-                    <button class="btn btn-primary" @onclick="NavigateToRegister">Sign up</button>
-                    <NavLink class="nav-link" href="Account/Login">
-                        Log in
-                    </NavLink>
-                </NotAuthorized>
-            </AuthorizeView>
+        <div class="d-flex top-row px-4 justify-content-between align-items-center bg-primary-theme">
+            <NavLink class="nav-link" href="/">
+                <h3 class="text-primary-theme fw-bold p-0 m-0">BlazorForms</h3>
+            </NavLink>
+            <div class="d-flex align-items-center ">
+                <ThemeSelect></ThemeSelect>
+                <CultureSelector/>
+                <AuthorizeView>
+                    <Authorized>
+                        @if (!string.IsNullOrEmpty(UserName))
+                        {
+                            <span>
+                                Welcome, @UserName
+                            </span>
+                        }
+                        <div class="nav-item px-3">
+                            <form action="Account/Logout" method="post">
+                                <AntiforgeryToken/>
+                                <input type="hidden" name="ReturnUrl"/>
+                                <button type="submit" class="btn btn-link">
+                                    Sign out
+                                </button>
+                            </form>
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <button class="btn btn-primary" @onclick="NavigateToRegister">Sign up</button>
+                        <NavLink class="nav-link" href="Account/Login">
+                            Log in
+                        </NavLink>
+                    </NotAuthorized>
+                </AuthorizeView>
+            </div>
+
         </div>
 
-        <article class="content px-4">
+        <article class="content px-4 bg-primary-theme">
             @Body
         </article>
     </main>

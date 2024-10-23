@@ -8,6 +8,7 @@
 @inject IRoleService RoleService
 @inject AuthenticationStateProvider AuthenticationState
 @inject UserManager<ApplicationUser> UserManager
+@inject UploadService UploadService
 @attribute [Authorize(Roles = "admin")]  
 <h3>ImageInputFile</h3>
 
@@ -26,7 +27,7 @@
       var extension = Path.GetExtension(file.Name);
       if (!extension.IsExtensionAllowed()) return;
       var fileStream = file.OpenReadStream(MaxFileSize);
-      var url = await new UploadService().UploadImage(file.Name, fileStream);
+      var url = await UploadService.UploadImage(file.Name, fileStream);
       await TemplateService.UpdateImageUrl(Guid.Parse("319cba42-a8aa-4e38-ac44-89895112e512"), url);
    }
 

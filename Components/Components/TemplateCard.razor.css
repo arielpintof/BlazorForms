@@ -6,3 +6,13 @@
     text-overflow: ellipsis;
     height: 2.8em;
 }
+
+img:hover, .image-container:hover, h3:hover {
+    cursor: pointer;
+}
+.card{
+    transition: transform 0.2s;
+}
+.card:hover{
+    transform: scale(1.05);
+}

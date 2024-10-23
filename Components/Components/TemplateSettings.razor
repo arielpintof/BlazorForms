@@ -24,7 +24,7 @@
                   <p style="font-size: 14px; color: darkgray">@Localization["VisibilityParagraph"]</p>
                </div>
                <div class="col d-flex justify-content-end">
-                  <Switch TValue="bool" Checked="@Template.IsPublic" CheckedChanged="@OnCheckedChanged"></Switch>
+                  <Switch TValue="bool" Checked="@Template.IsPublic" CheckedChanged="@OnPublicCheckedChanged"></Switch>
                </div>
             </div>
             <hr/>
@@ -45,63 +45,58 @@
                </div>
                <div class="col d-flex justify-content-end">
                   <div>
-                     <Select TValue="int">
-                        <SelectItem Value="1">All authenticated users</SelectItem>
-                        <SelectItem Value="1">Custom users</SelectItem>
-                     </Select>
+                     <Switch TValue="bool" Checked="@Template.IsRestrictedResponse" CheckedChanged="@OnRestrictedCheckedChanged"></Switch>
                   </div>
                </div>
             </div>
-            <div class="row px-4 ">
-               <div class="d-flex gap-2">
-                  <Autocomplete TItem="@ApplicationUser"
-                                TValue="string"
-                                Data="Users"
-                                TextField="@((e) => e.Email)"
-                                ValueField="@((e) => e.Id)"
-                                @bind-SelectedValue="@SelectedSearchUsers"
-                                @bind-SelectedText="SelectedAutoCompleteText"
-                                Placeholder="Find an user..."
-                                Filter="AutocompleteFilter.StartsWith"
-                                FreeTyping
-                                CustomFilter="@((item, searchValue) => item.Email.IndexOf(searchValue, 0, StringComparison.CurrentCultureIgnoreCase) >= 0)"
-                                Style="width: 350px">
-                  </Autocomplete>
-                  <button class="btn btn-primary btn-sm px-3">Add</button>
-               </div>
-               <hr class="my-2">
-               <div class="d-flex flex-column gap-2">
-                  <div class="row">
-                     <div class="d-flex gap-2 align-items-center col">
-                        <div class="icon-circle">
-                           e
-                        </div>
-                        <div class="d-flex flex-column">
-                           <span class="comment-author fw-bold" style="font-size: 14px">example@gmail.com</span>
-                           <span class="comment-date fw-lighter" style="font-size: 14px">Collaborator</span>
-                        </div>
-                     </div>
-                     <div class="col d-flex justify-content-end">
-                        <button class="btn btn-danger btn-sm my-1">Delete</button>
-                     </div>
+            @if (Template.IsRestrictedResponse)
+            {
+               <div class="row px-4 ">
+                  <div class="d-flex gap-2">
+                     <Autocomplete TItem="@ApplicationUser"
+                                   TValue="string"
+                                   Data="Users"
+                                   TextField="@((e) => e.Email)"
+                                   ValueField="@((e) => e.Id)"
+                                   @bind-SelectedValue="@SelectedSearchUsers"
+                                   @bind-SelectedText="SelectedAutoCompleteText"
+                                   Placeholder="Find an user..."
+                                   Filter="AutocompleteFilter.StartsWith"
+                                   CustomFilter="@((item, searchValue) => item.Email.IndexOf(searchValue, 0, StringComparison.CurrentCultureIgnoreCase) >= 0)"
+                                   Style="width: 350px">
+                     </Autocomplete>
+                     <button class="btn btn-primary btn-sm px-3" @onclick="AddUser">Add</button>
                   </div>
+                  @SelectedSearchUsers
+                  <hr class="my-2">
+                  @foreach (var user in AllowedUsers)
+                  {
+                     <div class="row mt-1">
+                        <div class="d-flex gap-2 align-items-center col">
+                           <div class="icon-circle">
+                              @user.Email!.ElementAt(0)
+                           </div>
+                           <div class="d-flex flex-column">
+                              <span class="comment-author fw-bold" style="font-size: 14px">@user.Email</span>
+                              <span class="comment-date fw-lighter" style="font-size: 14px">@(user.Id == Template.AuthorId ? "You" : "Collaborator")</span>
+                           </div>
+                        </div>
+                        @if (user.Id != Template.AuthorId)
+                        {
+                           <div class="col d-flex justify-content-end">
+                              <button class="btn btn-danger btn-sm my-1 d-flex align-items-center">
+                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash">
+                                    <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+                                 </svg>
+                              </button>
+                           </div>
+                        }
+                        
+                     </div>
+                  }
+               </div>
+            }
 
-                  <div class="row">
-                     <div class="d-flex gap-2 align-items-center col">
-                        <div class="icon-circle">
-                           e
-                        </div>
-                        <div class="d-flex flex-column">
-                           <span class="comment-author fw-bold" style="font-size: 14px">example@gmail.com</span>
-                           <span class="comment-date fw-lighter" style="font-size: 14px">Collaborator</span>
-                        </div>
-                     </div>
-                     <div class="col d-flex justify-content-end">
-                        <button class="btn btn-danger btn-sm my-1">Delete</button>
-                     </div>
-                  </div>
-               </div>
-            </div>
          </div>
       </div>
    </div>
@@ -109,24 +104,59 @@
 
 @code {
    [Parameter] public Template Template { get; set; } = null!;
-   public IEnumerable<ApplicationUser> Users { get; set; } = null!;
-   
+   public IEnumerable<ApplicationUser> Users { get; set; } = new List<ApplicationUser>();
+   private IList<ApplicationUser> AllowedUsers { get; set; } = new List<ApplicationUser>();
+
    protected override async Task OnInitializedAsync()
    {
-      Users = await UserManager.Users.ToListAsync();
+      await InitAllowUsersList();
+      await InitUsersList();
       await base.OnInitializedAsync();
    }
 
-   public string SelectedSearchUsers { get; set; }
-   public string SelectedAutoCompleteText { get; set; }
+   private async Task InitUsersList() => Users = await UserManager.Users
+      .Where(user => !Template.AllowedResponderIds.Contains(user.Id))
+      .ToListAsync();
 
-   async Task OnCheckedChanged(bool value)
+   private async Task InitAllowUsersList()
    {
-      Console.WriteLine("Switch Changed");
+      foreach (var id in Template.AllowedResponderIds)
+      {
+         var user = await UserManager.FindByIdAsync(id);
+         if (user is not null)
+         {
+            AllowedUsers.Add(user);
+         }
+      }
+      
+      AllowedUsers.Add(Template.Author);
+   }
+
+   private string? SelectedSearchUsers { get; set; }
+   private string? SelectedAutoCompleteText { get; set; }
+
+   async Task OnPublicCheckedChanged(bool value)
+   {
       Template.IsPublic = value;
       await TemplateService.UpdateTemplate(Template);
    }
 
+   async Task OnRestrictedCheckedChanged(bool value)
+   {
+      Template.IsRestrictedResponse = value;
+      await TemplateService.UpdateTemplate(Template);
+   }
    
+   private async Task AddUser()
+   {
+      if (SelectedSearchUsers is null) return;
+      var user = await UserManager.FindByIdAsync(SelectedSearchUsers);
+      if (user is null) return;
+      
+      AllowedUsers.Add(user);
+      await TemplateService.AddAllowedUser(user, Template.Id);
+      
+      StateHasChanged();
+   }
 
 }

@@ -13,6 +13,7 @@
 @using BlazorForms.Shared
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<TemplateSettingRes> Localization
+@inject UploadService UploadService
 @attribute [Authorize]
 
 <PageTitle>@(Template is null ? "Loading" : Template.Name)</PageTitle>
@@ -39,7 +40,7 @@ else
                      {
                         <img src="@Template.ImageUrl" class="img-fluid rounded mt-4" alt="Banner" style="height: 200px; object-fit: cover; width: 100%">
                      }
-                     <div class="card card-form mt-4">
+                     <div class="card card-form mt-4 bg-primary-theme text-primary-theme">
                         <div class="card-body">
                            <div class="editable-header mb-2 @(IsEditing ? "editing" : "")" @onclick="StartEditing">
                               @if (IsEditing)
@@ -55,7 +56,7 @@ else
                                  <h2 class="card-title">@(Template.Name ?? "Untitled Form")</h2>
                               }
                            </div>
-                           <Markdown Value="@MarkdownValue" ValueChanged="@OnMarkdownValueChanged" MinHeight="200px">
+                           <Markdown Class="bg-primary-theme text-primary-theme" Value="@MarkdownValue" ValueChanged="@OnMarkdownValueChanged" MinHeight="200px">
                               <Toolbar>
                                  <MarkdownToolbarButton Action="MarkdownAction.Bold" Title="Bold">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-type-bold" viewBox="0 0 16 16">
@@ -87,8 +88,8 @@ else
                               </Toolbar>
                            </Markdown>
 
-                           <label class="pt-1">Banner</label>
-                           <InputFile OnChange="LoadFile" accept=".png,.jpg,.jpeg" class="form-control"/>
+                           <label class="pt-1 text-primary-theme">Banner</label>
+                           <InputFile OnChange="LoadFile" accept=".png,.jpg,.jpeg" class="form-control bg-primary-theme text-primary-theme"/>
                         </div>
                         <div class="card-footer">
                            <div class="d-flex flex-wrap gap-2">
@@ -98,12 +99,20 @@ else
                      </div>
                      <div class="d-flex flex-column gap-2 py-3 ">
                         <SortableList Id="simpleList" Items="Template.Fields.OrderBy(e => e.Order).ToList()" 
-                                      OnUpdate="@SortList" Context="item">
+                                      OnUpdate="@SortList" Context="item" Handle=".drag-handle">
                            <SortableItemTemplate>
-                              <div class="my-2">
-                                 <TemplateField FieldId="@item.Id" OnDelete="StateHasChanged"/>
+                              <div>
+                                 <div class="has-cursor-grab">
+                                    <div class="drag-handle mr-4">
+                                       <i class="is-size-4 fas fa-grip-vertical"></i>
+                                    </div>
+                                 </div>
+                                 <div class="my-2">
+                                    <TemplateField FieldId="@item.Id" OnDelete="StateHasChanged"/>
+                                 </div>
                               </div>
                               
+
                            </SortableItemTemplate>
                         </SortableList>
                      </div>
@@ -186,7 +195,7 @@ else
       var extension = Path.GetExtension(file.Name);
       if (!extension.IsExtensionAllowed()) return;
       var fileStream = file.OpenReadStream(MaxFileSize);
-      var url = await new UploadService().UploadImage(file.Name, fileStream);
+      var url = await UploadService.UploadImage(file.Name, fileStream);
       await TemplateService.UpdateImageUrl(Guid.Parse(TemplateId), url);
    }
 
