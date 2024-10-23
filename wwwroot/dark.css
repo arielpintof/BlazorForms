@@ -1,53 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@500&display=swap');
-
-:root {
-    --bg-primary-light: #ffffff; /* blanco para el modo claro */
-    --bg-secondary-light: #f8f9fa; /* tono más claro */
-    --text-primary-light: #000000; /* texto negro en modo claro */
-}
-
-[data-theme='dark'] {
-    --bg-primary-light: #2e2e2e; /* color oscuro para el modo dark */
-    --bg-secondary-light: #3a3a3a; /* tono más oscuro */
-    --text-primary-light: #f1f1f1; /* texto claro en modo oscuro */
-}
-
-.bg-primary-theme {
-    background-color: var(--bg-primary-light);
-}
-
-.bg-light-theme {
-    background-color: var(--bg-secondary-light);
-}
-
-.text-primary-theme {
-    color: var(--text-primary-light);
-}
-
-html, body {
-    font-family: 'Roboto', sans-serif;
+﻿html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
 }
 
 a, .btn-link {
-    color: #006bb7;
+    color: #1e90ff;
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: #3a8fd6;
+    border-color: #327bb3;
     border-radius: 0.25rem;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-.btn {
-    transition: transform 0.2s;
-}
-
-.btn:hover {
-    transform: scale(1.1);
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .content {
@@ -63,11 +32,11 @@ h1:focus {
 }
 
 .invalid {
-    outline: 1px solid #e50000;
+    outline: 1px solid #e57373;
 }
 
 .validation-message {
-    color: #e50000;
+    color: #e57373;
 }
 
 .blazor-error-boundary {
@@ -76,10 +45,10 @@ h1:focus {
     color: white;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
+.blazor-error-boundary::after {
+    content: "An error has occurred.";
+}
 
 .darker-border-checkbox.form-check-input {
-    border-color: #929292;
+    border-color: #6c757d;
 }

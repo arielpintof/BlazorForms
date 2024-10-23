@@ -1,0 +1,24 @@
+﻿@inject IJSRuntime Js
+@page "/theme"
+<div class="form-check form-switch">
+   <input type="checkbox" class="form-check-input" id="themeSwitch" @onchange="OnSwitchChanged">
+   <label class="custom-control-label" for="themeSwitch">Dark Mode</label>
+</div>
+
+@code {
+   private bool _isDarkMode = false;
+
+   private async Task OnSwitchChanged(ChangeEventArgs e)
+   {
+      if (e.Value is null) return;
+      _isDarkMode = (bool)e.Value;
+      await ChangeTheme(_isDarkMode ? "dark" : "light");
+   }
+
+   [JSInvokable]
+   public async Task ChangeTheme(string theme)
+   {
+      await Js.InvokeVoidAsync("changeTheme", theme);
+   }
+
+}
