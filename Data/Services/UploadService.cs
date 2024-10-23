@@ -4,9 +4,15 @@ using CloudinaryDotNet.Actions;
 
 public class UploadService
 {
+    private readonly IConfiguration _configuration;
+
+    public UploadService(IConfiguration configuration)
+    {
+        _configuration = configuration;
+    }
     public async Task<string> UploadImage(string fileName, Stream fileStream)
     {
-        var cloudinary = new Cloudinary(Environment.GetEnvironmentVariable("CLOUDINARY_URL"))
+        var cloudinary = new Cloudinary(_configuration["Cloudinary:CloudinaryUrl"])
         {
             Api =
             {
