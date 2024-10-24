@@ -30,12 +30,21 @@
         <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8" />
         <PackageReference Include="Microsoft.Extensions.Localization" Version="8.0.8" />
+        <PackageReference Include="Microsoft.FluentUI.AspNetCore.Components" Version="4.10.2" />
     </ItemGroup>
 
     <ItemGroup>
       <EmbeddedResource Update="Locales\TemplateSettingRes.resx">
         <Generator>ResXFileCodeGenerator</Generator>
         <LastGenOutput>TemplateSettingRes.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Locales\AuthRes.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>AuthRes.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+      <EmbeddedResource Update="Locales\HomeRes.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>HomeRes.Designer.cs</LastGenOutput>
       </EmbeddedResource>
     </ItemGroup>
 
@@ -44,6 +53,16 @@
         <DesignTime>True</DesignTime>
         <AutoGen>True</AutoGen>
         <DependentUpon>TemplateSettingRes.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Locales\AuthRes.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>AuthRes.resx</DependentUpon>
+      </Compile>
+      <Compile Update="Locales\HomeRes.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>HomeRes.resx</DependentUpon>
       </Compile>
     </ItemGroup>
 

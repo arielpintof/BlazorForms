@@ -3,8 +3,8 @@
 
 <div>
    <select class="form-select bg-primary-theme text-primary-theme" name="" id="" @bind="Culture">
-      <option value="en-US">English</option>
-      <option value="es-ES">Spanish</option>
+      <option value="en-US" selected="@IsSelected("en-US")">English</option>
+      <option value="es-ES" selected="@IsSelected("es-ES")">Spanish</option>
    </select>
 </div>
 
@@ -15,6 +15,8 @@
       Culture = CultureInfo.CurrentCulture;
       base.OnInitialized();
    }
+   
+   private bool IsSelected(string culture) => Culture.Name == culture;
 
    private CultureInfo Culture
    {

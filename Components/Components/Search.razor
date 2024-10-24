@@ -2,58 +2,59 @@
 @using BlazorForms.Data.Models
 @using BlazorForms.Data.Services
 @inject ITemplateService TemplateService
-<h3>Buscar Templates</h3>
 
-<div class="search-container">
-   <input type="text" @bind="_searchTerm" placeholder="Ingrese término de búsqueda..." />
-   <button @onclick="SearchTemplatesAsync">Buscar</button>
-</div>
+<section class="container min-vh-100 ">
+   <h3>Buscar Templates</h3>
 
-@if (IsLoading)
-{
-   <p>Cargando resultados...</p>
-}
-
-@if (SearchResults.Any())
-{
-   <h4>Resultados</h4>
-   <ul>
-      @foreach (var template in SearchResults)
+   @if (IsLoading)
+   {
+      <p>Cargando resultados...</p>
+   }
+   <div class="d-flex p-5 flex-wrap bg-light-theme gap-2">
+      @if (SearchResults.Any())
       {
-         <li>
-            <strong>@template.Name</strong> - @template.Description
-            <br />
-            <em>Campos:</em>
-            <ul>
-               @foreach (var field in template.Fields)
-               {
-                  <li>@field.Title - @field.Description</li>
-               }
-            </ul>
-            <em>Comentarios:</em>
-            <ul>
-               @foreach (var comment in template.Comments)
-               {
-                  <li>@comment.Message</li>
-               }
-            </ul>
-         </li>
+         @foreach (var template in SearchResults)
+         {
+            <TemplateCard Template="template"></TemplateCard>
+         }
       }
-   </ul>
-}
-else if (SearchResults != null && !SearchResults.Any())
-{
-   <p>No se encontraron resultados para el término "@_searchTerm".</p>
-}
+
+      else if (SearchResults != null && !SearchResults.Any())
+      {
+         <p>No se encontraron resultados para el término "@SearchTerm".</p>
+      }
+   </div>
+</section>
+
 
 @code {
-   private string _searchTerm = string.Empty;
    private List<Template> SearchResults { get; set; } = [];
-   private bool IsLoading { get; set; } = false;
+   private bool IsLoading { get; set; }
+
+   [Parameter]
+   [SupplyParameterFromQuery(Name = "tag")]
+   public string? Tag { get; set; }
+
+   [Parameter]
+   [SupplyParameterFromQuery(Name = "term")]
+   public string? SearchTerm { get; set; }
+
+   protected override async Task OnParametersSetAsync()
+   {
+      if (Tag is not null)
+      {
+         SearchResults = await TemplateService.FindTemplatesByTagAsync(Tag);
+      }
+
+      if (SearchTerm is not null && Tag is null)
+      {
+         await SearchTemplatesAsync();
+      }
+   }
 
    private async Task SearchTemplatesAsync()
    {
-      if (string.IsNullOrWhiteSpace(_searchTerm))
+      if (string.IsNullOrWhiteSpace(SearchTerm))
       {
          SearchResults = [];
          return;
@@ -61,7 +62,9 @@ else if (SearchResults != null && !SearchResults.Any())
 
       IsLoading = true;
       SearchResults.Clear();
-      SearchResults = await TemplateService.SearchTemplatesAsync(_searchTerm);
+      SearchResults = await TemplateService.SearchTemplatesAsync(SearchTerm);
       IsLoading = false;
    }
+
+
 }

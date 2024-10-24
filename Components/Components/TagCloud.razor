@@ -2,6 +2,7 @@
 @using BlazorForms.Data.Services
 @using CloudinaryDotNet.Actions
 @inject ITagService TagService
+@inject NavigationManager Nav
 
 <div class="word-cloud-container">
    @foreach (var word in WordFrequencies)
@@ -72,9 +73,6 @@
       return colors[random.Next(colors.Length)];
    }
 
-   private async Task OnWordClick(string word)
-   {
-      await OnWordSelected.InvokeAsync(word);
-   }
+   private void OnWordClick(string word) => Nav.NavigateTo($"/search?tag={word}");
 
 }

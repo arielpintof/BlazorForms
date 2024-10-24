@@ -12,7 +12,7 @@
 @inject IStringLocalizer<TemplateSettingRes> Localization
 @inject ITagService TagService
 
-<div class="card card-form mt-4">
+<section class="card card-form mt-4 bg-light-theme text-primary-theme">
    <div class="card-body border-0" style="min-height: 100px">
       <div class="card-title">
          <h3>@Localization["SettingsTitle"]</h3>
@@ -83,7 +83,7 @@
                         </div>
                         @if (user.Id != Template.AuthorId)
                         {
-                           <div class="col d-flex justify-content-end">
+                           <div class="col d-flex justify-content-end" @onclick="async() => await RemoveUser(user)">
                               <button class="btn btn-danger btn-sm my-1 d-flex align-items-center">
                                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash">
                                     <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
@@ -100,7 +100,7 @@
          </div>
       </div>
    </div>
-</div>
+</section>
 
 @code {
    [Parameter] public Template Template { get; set; } = null!;
@@ -155,6 +155,14 @@
       
       AllowedUsers.Add(user);
       await TemplateService.AddAllowedUser(user, Template.Id);
+      
+      StateHasChanged();
+   }
+
+   private async Task RemoveUser(ApplicationUser user)
+   {
+      await TemplateService.RemoveAllowedUser(user, Template.Id);
+      AllowedUsers.Remove(user);
       
       StateHasChanged();
    }

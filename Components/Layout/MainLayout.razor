@@ -1,76 +1,100 @@
 ﻿@using BlazorForms.Components.Components
 @using BlazorForms.Data
+@using BlazorForms.Data.Services
 @using Microsoft.AspNetCore.Identity
+@using Microsoft.FluentUI.AspNetCore.Components
 @inherits LayoutComponentBase
 @inject UserManager<ApplicationUser> UserManager
 @inject NavigationManager Nav
+@inject AuthenticationStateProvider AuthenticationState
+@inject IRoleService RoleService
 
-<div class="page">
+<FluentToastProvider />
+<FluentDialogProvider />
+<FluentTooltipProvider />
+<FluentMessageBarProvider />
+<FluentMenuProvider />
 
-    <main>
-        <div class="d-flex top-row px-4 justify-content-between align-items-center bg-primary-theme">
-            <NavLink class="nav-link" href="/">
-                <h3 class="text-primary-theme fw-bold p-0 m-0">BlazorForms</h3>
-            </NavLink>
-            <div class="d-flex align-items-center ">
-                <ThemeSelect></ThemeSelect>
-                <CultureSelector/>
-                <AuthorizeView>
-                    <Authorized>
-                        @if (!string.IsNullOrEmpty(UserName))
-                        {
-                            <span>
-                                Welcome, @UserName
-                            </span>
-                        }
-                        <div class="nav-item px-3">
-                            <form action="Account/Logout" method="post">
-                                <AntiforgeryToken/>
-                                <input type="hidden" name="ReturnUrl"/>
-                                <button type="submit" class="btn btn-link">
-                                    Sign out
-                                </button>
-                            </form>
-                        </div>
-                    </Authorized>
-                    <NotAuthorized>
-                        <button class="btn btn-primary" @onclick="NavigateToRegister">Sign up</button>
-                        <NavLink class="nav-link" href="Account/Login">
-                            Log in
-                        </NavLink>
-                    </NotAuthorized>
-                </AuthorizeView>
-            </div>
+<div class="page bg-primary-theme min-vh-100">
 
-        </div>
+   <main class="bg-primary-theme">
+      <div class="d-flex top-row px-4 justify-content-between align-items-center bg-primary-theme">
+         <NavLink class="nav-link mx-1 flex-shrink-0" href="/">
+            <h3 class="text-primary-theme fw-bold p-0 m-0">BlazorForms</h3>
+         </NavLink>
 
-        <article class="content px-4 bg-primary-theme">
-            @Body
-        </article>
-    </main>
+         <Searchbar></Searchbar>
+
+
+         <div class="d-flex align-items-center gap-1">
+            <AuthorizeView>
+               
+               <Authorized>
+                  @if (IsAdmin)
+                  {
+                     <NavLink class="nav-link mx-1 flex-shrink-0 icon-link-hover px-2" href="/admin-panel">
+                        <span class="text-primary-theme fw-medium p-0 m-0">Admin Panel</span>
+                     </NavLink>
+                  }
+                  
+                  @if (!string.IsNullOrEmpty(UserName))
+                  {
+                     <span class="text-primary-theme">
+                        Welcome, <span class="text-primary-theme fw-medium">@UserName</span>
+                     </span>
+                  }
+                  <div class="nav-item px-3">
+                     <form action="Account/Logout" method="post">
+                        <AntiforgeryToken/>
+                        <input type="hidden" name="ReturnUrl"/>
+                        <button type="submit" class="btn btn-link">
+                           Sign out
+                        </button>
+                     </form>
+                  </div>
+               </Authorized>
+               <NotAuthorized>
+                  <button class="btn btn-primary" @onclick="NavigateToRegister">Sign up</button>
+                  <NavLink class="nav-link" href="Account/Login">
+                     Log in
+                  </NavLink>
+               </NotAuthorized>
+            </AuthorizeView>
+         </div>
+
+      </div>
+
+      <article class="content px-4 bg-primary-theme">
+         @Body
+      </article>
+      <section>
+         <Footer></Footer>
+      </section>
+   </main>
 </div>
 
 <div id="blazor-error-ui">
-    An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
+   An unhandled error has occurred.
+   <a href="" class="reload">Reload</a>
+   <a class="dismiss">🗙</a>
 </div>
 
 @code{
-    [CascadingParameter] private AuthenticationState? Context { get; set; }
-    private string? UserName { get; set; }
+   private string? UserName { get; set; }
+   private bool IsAdmin { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        if (Context?.User.Identity?.Name != null)
-        {
-            var user = await UserManager.FindByNameAsync(Context.User.Identity.Name);
-            if (user != null)
-            {
-                UserName = user.UserName;
-            }
-        }
-    }
+   protected override async Task OnInitializedAsync()
+   {
+      var state = await AuthenticationState.GetAuthenticationStateAsync();
+      if (state.User.Identity is { IsAuthenticated: true })
+      {
+         UserName = UserManager.GetUserName(state.User);
+         var userId = UserManager.GetUserId(state.User);
+         if (userId is null) return;
+         IsAdmin = await RoleService.IsAdmin(userId);
+      }
+      
+   }
 
-    void NavigateToRegister() => Nav.NavigateTo("Account/Register");
+   void NavigateToRegister() => Nav.NavigateTo("Account/Register");
 }

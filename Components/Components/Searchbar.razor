@@ -1,0 +1,24 @@
+﻿@inject NavigationManager Nav
+
+<form class="d-flex flex-shrink-1 input-group w-75  bg-light-theme rounded" @onsubmit="Enter" style="max-width: 250px">
+   <div class="input-group-prepend align-items-center d-flex">
+      <span class="input-group-text border-0 bg-light-theme" id="basic-addon1">
+         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+         </svg>
+      </span>
+   </div>
+   <input type="text" class="form-control border-0 bg-light-theme" placeholder="Search a template" aria-label="Template search"
+          @bind="SearchString">
+</form>
+
+@code{
+   private string? SearchString { get; set; }
+
+   private void Enter()
+   {
+      if (SearchString is null || !SearchString.Any()) return;
+      Nav.NavigateTo($"/search?term={SearchString}");
+   }
+
+}

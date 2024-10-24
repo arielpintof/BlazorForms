@@ -6,26 +6,36 @@
 @using Microsoft.AspNetCore.Identity
 @using BlazorForms.Components.Components
 @using Microsoft.EntityFrameworkCore
+@using Microsoft.Extensions.Localization
 @inject AuthenticationStateProvider AuthenticationState
 @inject UserManager<ApplicationUser> UserManager
 @inject ITemplateService TemplateService
 @inject NavigationManager NavigationManager
 @inject ApplicationDbContext Context
+@inject IStringLocalizer<HomeRes> HomeLocalizer
+@inject IStringLocalizer<AuthRes> AuthLocalizer
+
 <PageTitle>Home</PageTitle>
 
 <div class="container-sm">
-   <div class="d-flex flex-column mx-auto py-5 w-75">
+   <div class="d-flex flex-column mx-auto py-5 my-5 w-75">
       <h1 class="fw-semibold text-center text-primary-theme">
-         Create online surveys and forms that mean business
+         @HomeLocalizer["HeroTitle"]
       </h1>
-      <p class="text-center text-primary-theme">Get better insights faster—with expert templates, helpful AI, and convenient ways to reach more people.</p>
-      <div class="d-flex justify-content-center">
-         <button class="btn btn-primary fw-normal px-4 justify-content-center">Sign Up</button>
-      </div>
+      <p class="text-center text-primary-theme">@HomeLocalizer["HeroParagraph"]</p>
+      <AuthorizeView>
+         <NotAuthorized>
+            <div class="d-flex justify-content-center">
+               <button class="btn btn-primary fw-normal px-4 justify-content-center">@AuthLocalizer["SignUp"]</button>
+            </div>
+         </NotAuthorized>
+      </AuthorizeView>
+      
    </div>
-   <AuthorizeView>
-      <Authorized >
-         <div class="d-flex flex-column gap-3">
+   <div class="d-flex flex-column gap-3">
+      <AuthorizeView>
+         <Authorized >
+
 
             <section class="py-2 px-3 bg-light-theme rounded-2">
                <div class="d-flex justify-content-between py-2 align-items-center">
@@ -48,23 +58,31 @@
                   }
                </div>
             </section>
-            <section class="py-2 px-3 bg-light-theme rounded-2">
-               <h5 class="fw-medium py-2 text-primary-theme">Latest templates</h5>
-               <div class="d-flex gap-2">
-                  @foreach (var template in LatestCreatedTemplates.Take(6))
-                  {
-                     <TemplateCard Template="@template"></TemplateCard>
-                  }
-               </div>
-            </section>
-         </div>
-      </Authorized>
-      <NotAuthorized>
-         <h1>Hello, world!</h1>
 
-         Welcome to your new app.
-      </NotAuthorized>
-   </AuthorizeView>
+
+         </Authorized>
+         <NotAuthorized>
+         </NotAuthorized>
+      </AuthorizeView>
+      <section class="py-2 px-3 bg-light-theme rounded-2">
+         <h5 class="fw-medium py-2 text-primary-theme">Latest templates</h5>
+         <div class="d-flex gap-2">
+            @foreach (var template in LatestCreatedTemplates.Take(6))
+            {
+               <TemplateCard Template="@template"></TemplateCard>
+            }
+         </div>
+      </section>
+      <section class="py-2 px-3 bg-light-theme rounded-2">
+         <h5 class="fw-medium py-2 text-primary-theme">Most popular</h5>
+         <div class="d-flex gap-2">
+            @foreach (var template in MostPopularTemplates)
+            {
+               <TemplateCard Template="@template"></TemplateCard>
+            }
+         </div>
+      </section>
+   </div>
    <TagCloud></TagCloud>
 
 </div>
@@ -74,6 +92,7 @@
    string? UserId { get; set; }
    private IList<Template> UserTemplates { get; set; } = [];
    private IList<Template> LatestCreatedTemplates { get; set; } = [];
+   private IList<Template> MostPopularTemplates { get; set; } = [];
 
    protected override async Task OnInitializedAsync()
    {
@@ -86,6 +105,8 @@
 
       LatestCreatedTemplates = await Context.Templates.Where(e => e.IsPublic == true)
          .OrderByDescending(e => e.CreatedAt).Take(5).ToListAsync();
+
+      MostPopularTemplates = await TemplateService.GetMostPopularTemplatesAsync(5);
    }
 
    private async Task CreateForm()

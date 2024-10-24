@@ -7,14 +7,18 @@
 @using Blazorise
 @using Markdig
 @using BlazorForms.Components.Components
+@using BlazorForms.Data
 @using BlazorForms.Locales
 @using BlazorForms.Utils
-@using Microsoft.AspNetCore.Authorization
 @using BlazorForms.Shared
+@using Microsoft.AspNetCore.Identity
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizer<TemplateSettingRes> Localization
 @inject UploadService UploadService
-@attribute [Authorize]
+@inject AuthenticationStateProvider AuthenticationState
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Nav
+@inject IRoleService RoleService
 
 <PageTitle>@(Template is null ? "Loading" : Template.Name)</PageTitle>
 
@@ -28,9 +32,9 @@ else
    <div class="container-lg">
       <div class="row justify-content-center">
          <div class="col-md-8">
-            <Tabs RenderMode="TabsRenderMode.LazyReload" SelectedTab="questions" Justified="true">
-               <Items>
-                  <Tab Name="questions">@Localization["Questions"]</Tab>
+            <Tabs Class="bg-primary-theme" RenderMode="TabsRenderMode.LazyReload" SelectedTab="questions" Justified="true">
+               <Items >
+                  <Tab Class="bg-primary-theme text-primary-theme" Name="questions">@Localization["Questions"]</Tab>
                   <Tab Name="answers">@Localization["Answers"]</Tab>
                   <Tab Name="settings">@Localization["SettingsTitle"]</Tab>
                </Items>
@@ -98,7 +102,7 @@ else
                         </div>
                      </div>
                      <div class="d-flex flex-column gap-2 py-3 ">
-                        <SortableList Id="simpleList" Items="Template.Fields.OrderBy(e => e.Order).ToList()" 
+                        <SortableList Id="simpleList" Items="Template.Fields.OrderBy(e => e.Order).ToList()"
                                       OnUpdate="@SortList" Context="item" Handle=".drag-handle">
                            <SortableItemTemplate>
                               <div>
@@ -111,12 +115,15 @@ else
                                     <TemplateField FieldId="@item.Id" OnDelete="StateHasChanged"/>
                                  </div>
                               </div>
-                              
+
 
                            </SortableItemTemplate>
                         </SortableList>
                      </div>
-                     <CommentsField TemplateId="@Template.Id"/>
+                     @if (ShowComments)
+                     {
+                        <CommentsField TemplateId="@Template.Id"/>
+                     }
                   </TabPanel>
                   <TabPanel Name="answers">
                      <ResponsesDataGrid Responses="Template.Responses"></ResponsesDataGrid>
@@ -138,14 +145,51 @@ else
    private Template? Template { get; set; }
    private string? MarkdownValue { get; set; }
    private string MarkdownContent { get; set; } = string.Empty;
+   private bool ShowComments { get; set; }
 
    protected override async Task OnParametersSetAsync()
    {
-      var id = Guid.Parse(TemplateId);
+      if (!Guid.TryParse(TemplateId, out var id))
+      {
+         RedirectToForm();
+         return;
+      }
+      
       Template = await TemplateService.FindTemplateByIdAsync(id);
-      if (Template is null) return;
+      if (Template == null)
+      {
+         RedirectToForm();
+         return;
+      }
+      
       MarkdownValue = Template.Description;
       MarkdownContent = Template.Description!;
+      
+      var state = await AuthenticationState.GetAuthenticationStateAsync();
+      var user = state.User;
+      
+      if (user.Identity?.IsAuthenticated != true)
+      {
+         RedirectToForm();
+         return;
+      }
+      
+      var appUser = await UserManager.GetUserAsync(user);
+      if (appUser == null)
+      {
+         RedirectToForm();
+         return;
+      }
+      
+      var isAdmin = await RoleService.IsAdmin(appUser.Id);
+     
+      if (appUser.Id != Template.AuthorId && !isAdmin)
+      {
+         RedirectToForm();
+         return;
+      }
+
+      ShowComments = true;
    }
 
    Task OnMarkdownValueChanged(string value)
@@ -219,11 +263,27 @@ else
 
       for (var i = 0; i < items.Count; i++)
       {
-         items[i].Order = i; 
-         await FieldService.UpdateFieldAsync(items[i]); 
+         items[i].Order = i;
+         await FieldService.UpdateFieldAsync(items[i]);
       }
-      
+
       //StateHasChanged();
    }
 
+   void RedirectToForm()
+   {
+      Nav.NavigateTo($"survey/{TemplateId}");
+   }
+
 }
+
+<style>
+   .active {
+      background-color: var(--bg-primary-light) !important;
+      color: var(--text-primary-light) !important;
+   }
+   .nav-link{
+      color: var(--text-primary-light) !important;
+   }
+   
+</style>

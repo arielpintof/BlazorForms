@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-
 using Template = BlazorForms.Data.Models.Template;
 
 namespace BlazorForms.Data.Services;
@@ -91,7 +90,7 @@ public class TemplateService : ITemplateService
         //await _context.Templates.Where(e => e.Id == templateId).ExecuteDeleteAsync();
         var template = await _context.Templates.SingleOrDefaultAsync(e => e.Id == templateId);
         if (template is null) return;
-        
+
         _context.Templates.Remove(template);
         await _context.SaveChangesAsync();
     }
@@ -109,12 +108,12 @@ public class TemplateService : ITemplateService
     {
         var template = await _context.Templates.SingleOrDefaultAsync(e => e.Id == updatedTemplate.Id);
         if (template is null) return;
-        
+
         _context.Entry(template).CurrentValues.SetValues(updatedTemplate);
         await _context.SaveChangesAsync();
     }
 
-    public async Task AddAllowedUser(ApplicationUser applicationUser, Guid templateId )
+    public async Task AddAllowedUser(ApplicationUser applicationUser, Guid templateId)
     {
         var template = await _context.Templates.SingleOrDefaultAsync(e => e.Id == templateId);
         Console.WriteLine(applicationUser.Id);
@@ -129,30 +128,39 @@ public class TemplateService : ITemplateService
         template?.AllowedResponderIds.Remove(applicationUser.Id);
         await _context.SaveChangesAsync();
     }
-    
+
     public async Task<List<Template>> SearchTemplatesAsync(string searchTerm)
     {
         searchTerm = searchTerm.ToLower();
-        
+
         var templates = await _context.Templates
             .Where(t =>
-                
                 (t.Name != null && t.Name.ToLower().Contains(searchTerm)) ||
                 (t.Description != null && t.Description.ToLower().Contains(searchTerm)) ||
-                
                 t.Fields.Any(f =>
                     (f.Title != null && f.Title.ToLower().Contains(searchTerm)) ||
                     (f.Description != null && f.Description.ToLower().Contains(searchTerm))
                 ) ||
-                
                 t.Comments.Any(c =>
                     c.Message.ToLower().Contains(searchTerm)
-                )
+                ) ||
+                t.Tags.Any(e => e.Name.ToLower().Contains(searchTerm))
             )
-            .Include(e=> e.Comments)
+            .Include(e => e.Comments)
             .Include(t => t.Fields)
             .ToListAsync();
 
         return templates;
+    }
+
+    public async Task<List<Template>> FindTemplatesByTagAsync(string tag)
+    {
+        return await _context.Templates.Where(e => e.Tags.Any(t => t.Name.Contains(tag))).ToListAsync();
+    }
+
+    public async Task<List<Template>> GetMostPopularTemplatesAsync(int number)
+    {
+        return await _context.Templates.Where(e => e.IsPublic == true)
+            .OrderByDescending(e => e.Responses.Count).Take(number).ToListAsync();
     }
 }

@@ -1,17 +1,39 @@
 ﻿@using BlazorForms.Data.Models
 @using Blazorise.DataGrid
 
-<DataGrid TItem="FormResponse"
-          Data="@Responses"
-          @bind-SelectedRow="@SelectedResponse"
-          Responsive>
-   <DataGridCommandColumn />
-   <DataGridColumn Field="@nameof(FormResponse.Id)" Caption="#" Sortable="false" />
-   <DataGridColumn Field="@nameof(FormResponse.Responder)" Caption="Email" Editable />
-   <DataGridColumn Field="@nameof(FormResponse.SubmittedAt)" Caption="Submitted At" Editable />
-</DataGrid>
+<article class="py-lg-4 py-md-2 py-2">
+   <DataGrid TItem="FormResponse"
+             Data="@Responses"
+             Class="border rounded"
+             @bind-SelectedRow="@SelectedResponse"
+             RowStyling="@OnRowStyling"
+             Responsive>
+      <DataGridCommandColumn />
+      <DataGridColumn Field="@nameof(FormResponse.Id)" Caption="#" Sortable="false" />
+      <DataGridColumn Field="@nameof(FormResponse.Responder)" Caption="Email" Editable />
+      <DataGridColumn Field="@nameof(FormResponse.SubmittedAt)" Caption="Submitted At" Editable />
+   </DataGrid>
+</article>
+
 
 @code {
    [Parameter] public IEnumerable<FormResponse> Responses { get; set; } = null!;
    private FormResponse? SelectedResponse { get; set; }
+
+   private void OnRowStyling(FormResponse response, DataGridRowStyling styling)
+   {
+      styling.Class = "bg-dark";
+   }
+
 }
+
+<style>
+   .table tbody tr {
+      background-color: var(--bg-secondary-light) !important;
+      color: var(--text-primary-light) !important;
+   }
+   
+   .table thead {
+      color: var(--text-primary-light) !important;
+   }
+</style>

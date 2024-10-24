@@ -19,4 +19,5 @@ public class CultureController : Controller
 
         return LocalRedirect(redirectUri);
     }
+    
 }

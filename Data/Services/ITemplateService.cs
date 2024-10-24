@@ -16,4 +16,6 @@ public interface ITemplateService
     Task AddAllowedUser(ApplicationUser applicationUser, Guid templateId);
     Task RemoveAllowedUser(ApplicationUser applicationUser, Guid templateId);
     Task<List<Template>> SearchTemplatesAsync(string searchTerm);
+    Task<List<Template>> FindTemplatesByTagAsync(string tag);
+    Task<List<Template>> GetMostPopularTemplatesAsync(int templateQty);
 }

@@ -1,0 +1,121 @@
+﻿@page "/admin-panel"
+
+@inject UserManager<ApplicationUser> UserManager
+@inject NavigationManager Navigation
+@using BlazorForms.Data
+@using BlazorForms.Data.Services
+@using CloudinaryDotNet.Actions
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.FluentUI.AspNetCore.Components
+@inject IRoleService RoleService
+@attribute [Authorize]
+
+<PageTitle>Users</PageTitle>
+<div class="container min-vh-100">
+   <div class="d-flex gap-2 flex-wrap">
+      <FluentTooltip Anchor="delete-button">Delete</FluentTooltip>
+      <button id="delete-button" class="d-flex align-items-center gap-1 btn btn-sm border icon-hover" @onclick="DeleteUsers">
+         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash">
+            <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>
+         </svg>
+         Delete
+      </button>
+      <button class="d-flex align-items-center gap-1 btn btn-sm border icon-hover" @onclick="GiveAdminRole">
+         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-plus">
+            <path d="M5 12h14"/><path d="M12 5v14"/>
+         </svg>
+         Give admin
+      </button>
+      <button class="d-flex align-items-center gap-1 btn btn-sm border icon-hover" @onclick="RemoveAdminRole">
+         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-minus">
+            <path d="M5 12h14"/>
+         </svg>
+         Remove admin
+      </button>
+   </div>
+   <FluentDataGrid ItemsProvider="UserProvider" ShowHover="true" TGridItem="User" Pagination="@_pagination">
+      <SelectColumn TGridItem="User"
+                    SelectMode="DataGridSelectMode.Multiple"
+                    Property="@(e => e.Selected)"
+                    OnSelect="@(e => OnSelectChanged(e.Item, e.Selected))"
+                    SelectAll="@(Users.All(p => p.Selected))"
+                    SelectAllChanged="@(all => Users.ToList().ForEach(p => p.Selected = (all == true)))"/>
+
+      <PropertyColumn Property="@(p => p.ApplicationUser.Id)" Title="Id" Sortable="true"/>
+      <PropertyColumn Property="@(p => p.ApplicationUser.Email)" Sortable="true"/>
+      <PropertyColumn Property="@(p => p.Role)" Title="Role"></PropertyColumn>
+   </FluentDataGrid>
+   <FluentPaginator State="@_pagination"/>
+
+</div>
+
+
+@code {
+   private readonly PaginationState _pagination = new() { ItemsPerPage = 10 };
+   [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
+   private List<User> Users { get; set; } = [];
+
+   protected override async Task OnInitializedAsync()
+   {
+      var appUsers = await UserManager.Users.ToListAsync();
+      foreach (var e in appUsers)
+      {
+         var role = await RoleColumn(e.Id);
+         Users.Add(new User(e)
+         {
+            Role = role
+         });
+      }
+      //UserActionHandler = new UserActionHandler(UserManager, Navigation, AuthenticationState);
+   }
+
+   private async Task<string> RoleColumn(string id)
+   {
+      return await RoleService.IsAdmin(id) ? "Admin" : "Member";
+   }
+
+
+   public record User(ApplicationUser ApplicationUser)
+   {
+      public bool Selected { get; set; }
+      public string Role { get; set; }
+   }
+
+   private static void OnSelectChanged(User user, bool selected) => user.Selected = selected;
+
+   private ValueTask<GridItemsProviderResult<User>> UserProvider(
+      GridItemsProviderRequest<User> req)
+   {
+      var subList = Users.Skip(req.StartIndex).Take(req.Count ?? Users.Count).ToList();
+      return ValueTask.FromResult(GridItemsProviderResult.From(subList, Users.Count));
+   }
+
+   private async Task RemoveAdminRole()
+   {
+      foreach (var user in Users.Where(e => e.Selected))
+      {
+         await RoleService.RemoveRoleToUser(user.ApplicationUser.Id, "admin");
+      }
+   }
+
+   private async Task GiveAdminRole()
+   {
+      foreach (var user in Users.Where(e => e.Selected))
+      {
+         await RoleService.AssignRoleToUser(user.ApplicationUser.Id, "admin");
+      }
+
+      StateHasChanged();
+   }
+
+   private async Task DeleteUsers()
+   {
+      foreach (var user in Users.Where(e => e.Selected))
+      {
+         await UserManager.DeleteAsync(user.ApplicationUser);
+      }
+   }
+
+}

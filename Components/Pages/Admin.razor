@@ -1,0 +1,81 @@
+﻿@page "/admin"
+@using BlazorForms.Data
+@using BlazorForms.Data.Models
+@using BlazorForms.Data.Services
+@using Blazorise.DataGrid
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject UserManager<ApplicationUser> UserManager
+@inject IRoleService RoleService
+@using Blazorise
+
+<article class="py-lg-4 py-md-2 py-2 min-vh-100 container">
+   <DataGrid TItem="User"
+             Data="@Users"
+             Class="border rounded"
+             Responsive
+             Editable
+             ShowPager
+             CommandMode="DataGridCommandMode.ButtonRow">
+      <DataGridColumns>
+         <DataGridColumn Field="@nameof(User.Id)" Caption="#" Sortable="false"/>
+         <DataGridColumn Field="@nameof(User.Email)" Caption="Email" />
+         <DataGridColumn Field="@nameof(User.Role)" Caption="Role" />
+      </DataGridColumns>
+      
+      <ButtonRowTemplate>
+         <Button Color="Color.Success" >New</Button>
+         <Button Color="Color.Primary"  >Edit</Button>
+         <Button Color="Color.Danger" >Delete</Button>
+      </ButtonRowTemplate>
+   </DataGrid>
+</article>
+
+
+@code {
+   public IList<User> Users { get; set; } = new List<User>();
+   private ApplicationUser? SelectedResponse { get; set; }
+
+   protected override async Task OnInitializedAsync()
+   {
+      var appUsers = await UserManager.Users.ToListAsync();
+      
+
+      foreach (var e in appUsers)
+      {
+         var role = await RoleColumn(e.Id);
+         Users.Add(new User
+         {
+            Email = e.Email,
+            Id = e.Id,
+            Role = role
+         });
+      }
+   }
+
+   private async Task<string> RoleColumn(string id)
+   {
+      return await RoleService.IsAdmin(id) ? "Admin" : "Member";
+   }
+
+   public class User
+   {
+      public string Id { get; set; }
+      public string Email { get; set; }
+      public string Role { get; set; }
+   }
+   
+
+
+}
+
+<style>
+   .table tbody tr {
+      background-color: var(--bg-secondary-light) !important;
+      color: var(--text-primary-light) !important;
+   }
+
+   .table thead {
+      color: var(--text-primary-light) !important;
+   }
+</style>

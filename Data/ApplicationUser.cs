@@ -1,4 +1,5 @@
 using BlazorForms.Data.Models;
+using BlazorForms.Data.Services;
 using Microsoft.AspNetCore.Identity;
 
 namespace BlazorForms.Data;
@@ -7,4 +8,8 @@ namespace BlazorForms.Data;
 public class ApplicationUser : IdentityUser
 {
     public IList<Like> LikedTemplates { get; set; } = new List<Like>();
+}
+
+public static class ApplicationUserExtension
+{
 }

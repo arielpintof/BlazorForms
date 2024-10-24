@@ -19,7 +19,7 @@
 else
 {
    <PageTitle>@Template.Name</PageTitle>
-   <div class="container-lg pb-5">
+   <div class="container-lg pb-5 min-vh-100">
       <div class="row justify-content-center">
          <div class="col-md-8">
             @if (Template.ImageUrl is not null)
@@ -28,62 +28,67 @@ else
             }
             <TemplateHeader Title="@Template.Name" Description="@Template.Description"/>
 
-            <EditForm Model="@_responses" OnSubmit="@GenerateFormResponse">
-               <DataAnnotationsValidator/>
-               <ValidationSummary/>
-               <div class="d-flex flex-column gap-2 py-3">
-                  @foreach (var field in Template.Fields)
-                  {
-                     <div class="card card-form">
-                        <div class="card-body" style="min-height: 100px">
-                           <div class="card-title pb-2">
-                              <h5>@field.Title</h5>
-                           </div>
+            @if (!RequiredAccess || (RequiredAccess && AllowedToAnswer))
+            {
+               <EditForm Model="@_responses" OnSubmit="@GenerateFormResponse">
+                  <DataAnnotationsValidator/>
+                  <ValidationSummary/>
+                  <div class="d-flex flex-column gap-2 py-3">
+                     @foreach (var field in Template.Fields.OrderBy(e => e.Order))
+                     {
+                        <div class="card card-form">
+                           <div class="card-body" style="min-height: 100px">
+                              <div class="card-title pb-2">
+                                 <h5>@field.Title</h5>
+                              </div>
 
-                           @if (_responses.TryGetValue(field.Id, out var response))
-                           {
-                              @if (field.Type == FieldType.SingleLineString || field.Type == FieldType.MultiLineText)
+                              @if (_responses.TryGetValue(field.Id, out var response))
                               {
-                                 <InputTextArea @bind-Value="response.TextResponse" class="form-control"/>
+                                 @if (field.Type == FieldType.SingleLineString || field.Type == FieldType.MultiLineText)
+                                 {
+                                    <InputTextArea @bind-Value="response.TextResponse" disabled="@ReadOnly" class="form-control"/>
+                                 }
+                                 else if (field.Type == FieldType.PositiveInteger)
+                                 {
+                                    <InputNumber @bind-Value="response.IntegerResponse" disabled="@ReadOnly"class="form-control"/>
+                                 }
+                                 else if (field.Type == FieldType.MultiSelection)
+                                 {
+                                    <InputRadioGroup @bind-Value="@response.SelectedOptionId"
+                                                     Name="@response.FieldId.ToString()"
+                                                     class="form-check">
+                                       @foreach (var option in field.Options)
+                                       {
+                                          <div class="py-1">
+                                             <InputRadio Value="option.Id" disabled="@ReadOnly" class="form-check-input ms-2 pointer"/>
+                                             <label class="form-check-label px-1">@option.Value</label>
+                                          </div>
+                                       }
+                                    </InputRadioGroup>
+                                 }
                               }
-                              else if (field.Type == FieldType.PositiveInteger)
-                              {
-                                 <InputNumber @bind-Value="response.IntegerResponse" class="form-control"/>
-                              }
-                              else if (field.Type == FieldType.MultiSelection)
-                              {
-                                 <InputRadioGroup @bind-Value="@response.SelectedOptionId"
-                                                  Name="@response.FieldId.ToString()"
-                                                  class="form-check">
-                                    @foreach (var option in field.Options)
-                                    {
-                                       <div class="py-1">
-                                          <InputRadio Value="option.Id" class="form-check-input ms-2 pointer"/>
-                                          <label class="form-check-label px-1">@option.Value</label>
-                                       </div>
-                                    }
-                                 </InputRadioGroup>
-                              }
-                           }
+                           </div>
                         </div>
-                     </div>
-                  }
-                  <button type="submit" class="btn btn-primary">Submit</button>
+                     }
+                     <button type="submit" class="btn btn-primary" disabled="@ReadOnly">Submit</button>
+                  </div>
+               </EditForm>
+            }
+            else
+            {
+               <div class="text-center py-5 my-3 bg-light-theme rounded-2">
+                  <h3 class="d-flex justify-content-center gap-2 align-items-center text-danger">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-triangle-alert">
+                        <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>
+                     </svg>
+                     Access Denied
+                  </h3>
+                  <p class="text-muted">
+                     You do not have permission to access this form. Please contact the administrator if you believe this is an error.
+                  </p>
                </div>
-            </EditForm>
-            <div class="mt-4">
-               <h5>Valores Actuales:</h5>
-               <ul>
-                  @foreach (var response in _responses)
-                  {
-                     <li>
-                        <strong>Campo ID: </strong>@response.Key<br/>
-                        <strong>response ID: </strong>@response.Value.Id<br/>
-                        <strong>Respuesta: </strong>@DisplayValue(response.Value)
-                     </li>
-                  }
-               </ul>
-            </div>
+            }
+            
          </div>
       </div>
    </div>
@@ -94,6 +99,10 @@ else
    private string? UserId { get; set; }
    private Template? Template { get; set; }
    private readonly Dictionary<Guid, FieldResponse> _responses = new();
+   private bool ReadOnly { get; set; }
+   private bool AlreadyAnswered { get; set; }
+   private bool RequiredAccess { get; set; }
+   private bool AllowedToAnswer { get; set; }
 
    protected override async Task OnInitializedAsync()
    {
@@ -102,11 +111,11 @@ else
       if (state.User.Identity is { IsAuthenticated: true })
       {
          UserId = UserManager.GetUserId(state.User);
-         var hasCompleted = Template != null && Template.Responses.Any(e => e.ResponderId.Equals(UserId));
-         if (hasCompleted)
-         {
-            Console.WriteLine("El usuario ya ha respondido esta encuesta");
-         }
+         AlreadyAnswered = Template != null && Template.Responses.Any(e => e.ResponderId.Equals(UserId));
+      }
+      else
+      {
+         ReadOnly = true;
       }
 
       if (Template != null)
@@ -120,6 +129,9 @@ else
             };
          }
       }
+
+      RequiredAccess = Template.IsRestrictedResponse;
+      AllowedToAnswer = Template.AllowedResponderIds.Any(e => e == UserId);
    }
 
    private string DisplayValue(FieldResponse response) =>
@@ -161,7 +173,7 @@ else
       if (UserId is null) return;
       var user = await UserManager.Users.FirstOrDefaultAsync(e => e.Id == UserId);
       if (user is null) return;
-      
+
       var formResponse = new FormResponse
       {
          Id = Guid.NewGuid(),

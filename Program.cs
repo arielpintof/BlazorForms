@@ -9,6 +9,7 @@ using BlazorForms.Data.Services;
 using Blazorise;
 using Blazorise.Bootstrap5;
 using Blazorise.Icons.FontAwesome;
+using Microsoft.FluentUI.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +33,9 @@ builder.Services
     .AddBlazorise(options => { options.Immediate = true; })
     .AddBootstrap5Providers()
     .AddFontAwesomeIcons();
+
+builder.Services.AddHttpClient();
+builder.Services.AddFluentUIComponents();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
                        throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
@@ -61,6 +65,7 @@ builder.Services.AddSignalR();
 builder.Services.AddCors();
 builder.Services.AddLocalization();
 builder.Services.AddControllers();
+
 
 var app = builder.Build();
 
