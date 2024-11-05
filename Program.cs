@@ -59,7 +59,8 @@ builder.Services
     .AddScoped<IRoleService, RoleService>()
     .AddScoped<ITagService, TagService>()
     .AddScoped<UploadService>()
-    .AddScoped<LuceneIndexService>();
+    .AddScoped<ISalesforceAuthService, SalesforceAuthService>()
+    .AddScoped<ISalesforceService, SalesforceService>();
 
 builder.Services.AddSignalR();
 builder.Services.AddCors();
@@ -69,11 +70,6 @@ builder.Services.AddControllers();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var initializer = scope.ServiceProvider.GetRequiredService<LuceneIndexService>();
-    await initializer.InitializeIndexAsync();
-}
 
 string[] supportedCultures = ["en-US", "es-ES"];
 var localizationOptions = new RequestLocalizationOptions()

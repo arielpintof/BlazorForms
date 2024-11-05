@@ -1,0 +1,104 @@
+﻿@page "/Account/Manage/Integrations/Salesforce"
+@using BlazorForms.Data
+@using BlazorForms.Data.Models.Salesforce
+@using BlazorForms.Data.Services
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject ISalesforceService SalesforceService
+@inject AuthenticationStateProvider AuthenticationState
+@inject UserManager<ApplicationUser> UserManager
+@rendermode InteractiveServer
+
+<div class="d-flex gap-2 align-items-center">
+   <h3 class="m-0">Salesforce</h3>
+   <div>
+      @if (HasId)
+      {
+         <span class="badge bg-success">Synchronized</span>
+      }
+   </div>
+</div>
+<p>Your account is already synchronized with Salesforce</p>
+<div class="border rounded-3 p-3 pb-4">
+   @if (Account is not null)
+   {
+      <div class="row row-cols-2">
+         <div class="col">
+            <div class="">
+               <label class="form-label">Name</label>
+               <input type="text" class="form-control" disabled="" placeholder="@Account.Name">
+            </div>
+
+         </div>
+         <div class="col">
+            <div class="">
+               <label class="form-label">Shipping Country</label>
+               <input type="text" class="form-control" disabled="" placeholder="@Account.ShippingCountry">
+            </div>
+         </div>
+      </div>
+   }
+   else
+   {
+      <p>Your account is not synchronized with Salesforce. Please fill out the form below to synchronize.</p>
+      <EditForm Model="@SynchronizationForm" OnValidSubmit="HandleSyncSubmit" FormName="SalesforceSyncForm">
+         <div class="row row-cols-2">
+            <div class="col">
+               <div class="">
+                  <label for="Name" class="form-label">Name</label>
+                  <InputText @bind-Value="SynchronizationForm.Name" class="form-control" id="Name"/>
+               </div>
+            </div>
+            <div class="col">
+               <div class="">
+                  <label for="ShippingCountry" class="form-label">Shipping Country</label>
+                  <InputText @bind-Value="SynchronizationForm.ShippingCountry" class="form-control" id="ShippingCountry"/>
+               </div>
+            </div>
+
+         </div>
+         <input type="submit" class="btn btn-primary mt-3" value="Save"/>
+      </EditForm>
+   }
+   
+</div>
+
+
+@code {
+   private string? UserId { get; set; }
+   private bool HasId { get; set; }
+   private SalesforceAccount? Account { get; set; }
+   private SalesforceAccount SynchronizationForm { get; set; }= new();
+   
+   protected override async Task OnInitializedAsync()
+   {
+      var state = await AuthenticationState.GetAuthenticationStateAsync();
+      if (state.User.Identity is { IsAuthenticated: true })
+      {
+         UserId = UserManager.GetUserId(state.User);
+      }
+
+      if (UserId is null) return;
+
+      var user = await UserManager.Users.FirstOrDefaultAsync(e => e.Id == UserId);
+      HasId = !string.IsNullOrEmpty(user?.SalesforceAccountId);
+
+      Account = await SalesforceService.GetAccountById(user.SalesforceAccountId);
+   }
+
+   private async Task HandleSyncSubmit()
+   {
+      if (UserId is null) return;
+      var accountId = await SalesforceService.CreateAccount(UserId, SynchronizationForm);
+      if (accountId is null) return;
+
+      var user = await UserManager.Users.FirstOrDefaultAsync(e => e.Id == UserId);
+      if (user is null) return;
+      user.SalesforceAccountId = accountId;
+      await UserManager.UpdateAsync(user);
+      
+      HasId = !string.IsNullOrEmpty(user.SalesforceAccountId);
+      StateHasChanged();
+   }
+
+}

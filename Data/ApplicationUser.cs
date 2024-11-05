@@ -8,6 +8,7 @@ namespace BlazorForms.Data;
 public class ApplicationUser : IdentityUser
 {
     public IList<Like> LikedTemplates { get; set; } = new List<Like>();
+    public string? SalesforceAccountId { get; set; }
 }
 
 public static class ApplicationUserExtension

@@ -1,0 +1,19 @@
+﻿<div class="profile-dropdown-container">
+   <button @onclick="ToggleDropdown" class="profile-icon">
+      <span>A</span>
+   </button>
+
+   @if (IsDropdownOpen)
+   {
+   <ul class="profile-dropdown-menu">
+      <li class="dropdown-item" >Profile</li>
+      <li class="dropdown-item" >Settings</li>
+      <li class="dropdown-item" >Logout</li>
+   </ul>
+   }
+</div>
+
+@code {
+   private bool IsDropdownOpen { get; set; }
+   private void ToggleDropdown() => IsDropdownOpen = !IsDropdownOpen;
+}
