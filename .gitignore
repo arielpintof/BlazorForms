@@ -22,3 +22,5 @@ riderModule.iml
 Data/app.db
 .env
 appsettings.json
+.idea/.idea.BlazorForms/.idea/sqldialects.xml
+.idea/.idea.BlazorForms/.idea/inspectionProfiles/Project_Default.xml
