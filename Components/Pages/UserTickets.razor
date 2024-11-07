@@ -1,0 +1,85 @@
+﻿@page "/my-tickets"
+@using BlazorForms.Data
+@using BlazorForms.Data.Models.Jira
+@using BlazorForms.Data.Services
+@using Blazorise.DataGrid
+@using Microsoft.AspNetCore.Identity
+@using Mono.TextTemplating
+@using Blazorise
+@inject IJiraService JiraService
+@inject AuthenticationStateProvider AuthenticationState
+@inject UserManager<ApplicationUser> UserManager
+
+<div class="min-vh-100 container py-4">
+    <div class="mb-4">
+        <h2 class="display-6 fw-medium">My Tickets</h2>
+        <div class="text-muted mb-4">Track your assigned tickets</div>
+        
+        <Card>
+            <CardBody>
+                <DataGrid TItem="Issue"
+                         Data="@Issues"
+                         @bind-SelectedRow="@selectedIssue"
+                         Responsive
+                         Hoverable
+                         Striped
+                         ShowPager
+                         PageSize="10"
+                         Class="border">
+                    <DataGridCommandColumn Width="50px"/>
+                    <DataGridColumn Caption="Id" Sortable="true" Width="120px">
+                        <DisplayTemplate>
+                            <Badge Color="Color.Secondary">@context.Key</Badge>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+                    <DataGridColumn Caption="Summary" Sortable="true">
+                        <DisplayTemplate>
+                            @context.Fields.Summary
+                        </DisplayTemplate>
+                    </DataGridColumn>
+                    <DataGridColumn Caption="Priority" Sortable="true" Width="150px">
+                        <DisplayTemplate>
+                            <div class="d-flex align-items-center">
+                                <img src="@context.Fields.Priority.IconUrl" height="16" width="16" alt="" class="me-2"/>
+                                @context.Fields.Priority.Name
+                            </div>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+                    <DataGridColumn Caption="Status" Sortable="true" Width="150px">
+                        <DisplayTemplate>
+                            <Badge Color="@GetStatusColor(context.Fields.Status.Name)">
+                                @context.Fields.Status.Name
+                            </Badge>
+                        </DisplayTemplate>
+                    </DataGridColumn>
+                </DataGrid>
+            </CardBody>
+        </Card>
+    </div>
+</div>
+
+@code {
+    private List<Issue> Issues { get; set; }
+    private Issue selectedIssue;
+    private ApplicationUser? User { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthenticationState.GetAuthenticationStateAsync();
+        if (state.User.Identity is { IsAuthenticated: true })
+        {
+            User = await UserManager.GetUserAsync(state.User);
+        }
+        Issues = await JiraService.GetIssuesByUserEmail(User.Email);
+    }
+
+    private Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Tareas por hacer" => Color.Primary,
+            "En curso" => Color.Info,
+            "Finalizada" => Color.Success,
+            _ => Color.Light
+        };
+    }
+}

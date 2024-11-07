@@ -20,7 +20,7 @@ public class JiraService : IJiraService
         _userManager = userManager;
         _password = configuration["Jira:Password"]!;
         _username = configuration["Jira:Username"]!;
-        _projectKey = "SOP";
+        _projectKey = "SUPPORT";
         _userManager = userManager;
     }
 
@@ -41,7 +41,7 @@ public class JiraService : IJiraService
 
         var content = await response.Content.ReadAsStringAsync();
         var result = JsonSerializer.Deserialize<UserCreatedResponse>(content);
-        
+
         return result?.accountId;
     }
 
@@ -53,7 +53,7 @@ public class JiraService : IJiraService
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authToken);
         var response = await client.GetAsync(url);
         if (!response.IsSuccessStatusCode) return null;
-        
+
         var content = await response.Content.ReadAsStringAsync();
         var result = JsonSerializer.Deserialize<UserCreatedResponse>(content);
 
@@ -74,7 +74,7 @@ public class JiraService : IJiraService
     public async Task<IssueResponse?> CreateIssueAsync(Issue issue, ApplicationUser user)
     {
         if (user.Email is null) return null;
-        
+
         if (!await UserExists(user.Email))
         {
             var jiraUserId = await CreateUserAsync(user.Email);
@@ -86,31 +86,54 @@ public class JiraService : IJiraService
         var authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_username}:{_password}"));
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authToken);
         var body = JsonSerializer.Serialize(issue);
+        Console.WriteLine(body);
         var content = new StringContent(body, Encoding.UTF8, "application/json");
         var response = await client.PostAsync(url, content);
 
-        if (!response.IsSuccessStatusCode) return null;
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.Write("NULL");
+            return null;
+        }
 
         var responseContent = await response.Content.ReadAsStringAsync();
+        Console.WriteLine(responseContent);
         var issueResponse = JsonSerializer.Deserialize<IssueResponse>(responseContent);
         return issueResponse;
+    }
+
+    public async Task<List<Issue>> GetIssuesByUserEmail(string email)
+    {
+        var url = $"""{BasePath}/search?jql=project="Support" AND SubmittedBy~"{email}" """;
+
+        using var client = new HttpClient();
+        var authToken = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{_username}:{_password}"));
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", authToken);
+        var response = await client.GetAsync(url);
+        var responseBody = await response.Content.ReadAsStringAsync();
+        var issues = JsonSerializer.Deserialize<Issues>(responseBody);
+        Console.WriteLine(issues);
+
+        return issues is null ? [] : issues.Issue;
     }
 
     private async Task AddJiraIdToUser(string? jiraUserId, ApplicationUser user)
     {
         if (jiraUserId is null) throw new Exception();
         user.JiraAccountId = jiraUserId;
-        
+
         await _userManager.UpdateAsync(user);
     }
 }
 
 public class IssueResponse
 {
-    [JsonPropertyName("id")]
-    public string Id { get; set; }
-    [JsonPropertyName("key")]
-    public string Key { get; set; }
-    [JsonPropertyName("self")]
-    public string Self { get; set; }
+    [JsonPropertyName("id")] public string Id { get; set; }
+    [JsonPropertyName("key")] public string Key { get; set; }
+    [JsonPropertyName("self")] public string Self { get; set; }
+}
+
+public class Issues
+{
+    [JsonPropertyName("issues")] public List<Issue> Issue { get; set; } = [];
 }

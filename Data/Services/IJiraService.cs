@@ -8,4 +8,5 @@ public interface IJiraService
     Task<string?> FindUserIdByEmailAsync(string email);
     Task<bool> UserExists(string id);
     Task<IssueResponse?> CreateIssueAsync(Issue issue, ApplicationUser user);
+    Task<List<Issue>> GetIssuesByUserEmail(string email);
 }

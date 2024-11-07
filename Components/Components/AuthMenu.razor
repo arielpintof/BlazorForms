@@ -1,19 +1,82 @@
-﻿<div class="profile-dropdown-container">
-   <button @onclick="ToggleDropdown" class="profile-icon">
-      <span>A</span>
-   </button>
+﻿@using BlazorForms.Data
+@using BlazorForms.Data.Services
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.FluentUI.AspNetCore.Components
+@inject AuthenticationStateProvider AuthenticationState
+@inject UserManager<ApplicationUser> UserManager
+@inject IRoleService RoleService
 
-   @if (IsDropdownOpen)
+<FluentProfileMenu Initials="@Initial"
+                   Style=" padding: 4px; border-radius: 8px !important;">
+   <HeaderTemplate>
+
+   </HeaderTemplate>
+   <ChildContent>
+      <AuthorizeView>
+         <Authorized>
+            <div style="width: 250px;">
+               <FluentLabel Typo="@Typography.Header" Style="font-weight: bold;">@User.Email</FluentLabel>
+               <div class="d-flex flex-column gap-2 mt-3">
+                  <NavLink href="/Account/Manage" class="nav-link" style="text-decoration: none; color: inherit; justify-content: flex-start; padding-left: 0; margin-left: 0">
+                     <button class="d-flex gap-2 btn btn btn-light align-items-center justify-content-start w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-user-round-pen">
+                           <path d="M2 21a8 8 0 0 1 10.821-7.487"/><path d="M21.378 16.626a1 1 0 0 0-3.004-3.004l-4.01 4.012a2 2 0 0 0-.506.854l-.837 2.87a.5.5 0 0 0 .62.62l2.87-.837a2 2 0 0 0 .854-.506z"/><circle cx="10" cy="8" r="5"/>
+                        </svg>
+                        Manage account
+                     </button>
+                  </NavLink>
+                  <NavLink href="/admin-panel" class="nav-link" style="text-decoration: none; color: inherit; justify-content: flex-start; padding-left: 0; margin-left: 0">
+                     <button class="d-flex gap-2 btn btn btn-light align-items-center justify-content-start w-100" href="/admin-panel">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield">
+                           <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+                        </svg>
+                        Admin panel
+                     </button>
+                  </NavLink>
+                  <NavLink href="/my-tickets" class="nav-link" style="text-decoration: none; color: inherit; justify-content: flex-start; padding-left: 0; margin-left: 0">
+                     <button class="d-flex gap-2 btn btn btn-light align-items-center justify-content-start w-100" href="/admin-panel">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-shield">
+                           <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+                        </svg>
+                        Support Tickets
+                     </button>
+                  </NavLink>
+                  <form action="Account/Logout" method="post">
+                     <AntiforgeryToken/>
+                     <input type="hidden" name="ReturnUrl"/>
+                     <button type="submit" class="d-flex gap-2 btn btn btn-light align-items-center justify-content-start w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-log-out">
+                           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/>
+                        </svg>
+                        Sign out
+                     </button>
+                  </form>
+               </div>
+
+            </div>
+
+         </Authorized>
+      </AuthorizeView>
+   </ChildContent>
+   <FooterTemplate>
+   </FooterTemplate>
+</FluentProfileMenu>
+
+@code{
+
+   [Parameter] public string Initial { get; set; } = string.Empty;
+   private ApplicationUser? User { get; set; }
+   private bool IsAdmin { get; set; }
+
+   protected override async Task OnInitializedAsync()
    {
-   <ul class="profile-dropdown-menu">
-      <li class="dropdown-item" >Profile</li>
-      <li class="dropdown-item" >Settings</li>
-      <li class="dropdown-item" >Logout</li>
-   </ul>
+      var state = await AuthenticationState.GetAuthenticationStateAsync();
+      if (state.User.Identity is { IsAuthenticated: true })
+      {
+         User = await UserManager.GetUserAsync(state.User);
+         if (User is null) return;
+         IsAdmin = await RoleService.IsAdmin(User.Id);
+      }
    }
-</div>
 
-@code {
-   private bool IsDropdownOpen { get; set; }
-   private void ToggleDropdown() => IsDropdownOpen = !IsDropdownOpen;
 }
