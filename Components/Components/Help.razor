@@ -1,0 +1,27 @@
+﻿@using System.Text.RegularExpressions
+@inject NavigationManager Nav
+
+<button class="btn btn-primary btn-sm" @onclick="RedirectToHelpForm">
+   Help
+</button>
+
+
+@code {
+   
+   private string GetCurrentLink() => Nav.Uri;
+   
+   static string Pattern => @"\/(?:survey|form)\/([a-f0-9-]{36})(?:\/edit)?$";
+   
+   string? ExtractTemplateId()
+   {
+      var match = Regex.Match(GetCurrentLink(), Pattern);
+      return match.Success ? match.Groups[1].Value : null;
+   }
+
+   private void RedirectToHelpForm()
+   {
+      var templateId = ExtractTemplateId();
+      Nav.NavigateTo(templateId is null ? $"/help?from={Nav.Uri}" : $"/help?from={Nav.Uri}&templateId={templateId}");
+   }
+
+}

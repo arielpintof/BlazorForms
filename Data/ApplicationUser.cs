@@ -9,6 +9,7 @@ public class ApplicationUser : IdentityUser
 {
     public IList<Like> LikedTemplates { get; set; } = new List<Like>();
     public string? SalesforceAccountId { get; set; }
+    public string? JiraAccountId { get; set; }
 }
 
 public static class ApplicationUserExtension

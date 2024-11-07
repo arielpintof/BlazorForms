@@ -8,6 +8,7 @@
 @inject AuthenticationStateProvider AuthenticationState
 @inject UserManager<ApplicationUser> UserManager
 @inject NavigationManager Nav
+@inject IJiraService JiraService
 <h3>Integrations</h3>
 
 <div class="card rounded p-0 mt-3" style="border-color: #eaeaea; max-width: 600px ">
@@ -64,8 +65,7 @@
       {
          UserId = UserManager.GetUserId(state.User);
       }
-
-   
+      
    }
 
    void NavToSalesforce()

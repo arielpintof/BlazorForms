@@ -1,0 +1,107 @@
+﻿@page "/Help"
+@using BlazorForms.Data
+@using BlazorForms.Data.Models.Jira
+@using BlazorForms.Data.Services
+@using Microsoft.AspNetCore.Identity
+@inject IJiraService JiraService
+@inject UserManager<ApplicationUser> UserManager
+@inject AuthenticationStateProvider AuthenticationState
+@inject ITemplateService TemplateService
+
+<div class="container my-5">
+   <div class="row justify-content-center">
+      <div class="col-lg-6 col-md-8">
+         <div class="card shadow">
+            <div class="card-body">
+               <h3 class="card-title text-center mb-4">Create Ticket</h3>
+               <EditForm Model="@Ticket" OnValidSubmit="CreateTicket">
+                  <!-- Summary Field -->
+                  <div class="mb-3">
+                     <label for="summary" class="form-label">Summary</label>
+                     <InputTextArea @bind-Value="Ticket.Fields.Summary" type="text" class="form-control" id="summary" name="summary" required/>
+                  </div>
+
+                  <!-- Priority Field -->
+                  <div class="mb-3">
+                     <label for="priority" class="form-label">Priority</label>
+                     <select @bind-Value="Ticket.Fields.Priority.Id" class="form-select" id="priority" name="priority" required>
+                        <option value="2">High</option>
+                        <option value="3">Medium</option>
+                        <option value="4">Low</option>
+                     </select>
+                  </div>
+                  
+                  <!-- Submit Button -->
+                  <div class="">
+                     <button type="submit" class="btn btn-primary">Submit</button>
+                  </div>
+               </EditForm>
+            </div>
+         </div>
+      </div>
+   </div>
+</div>
+
+@code {
+   private string? UserId { get; set; }
+
+   [SupplyParameterFromQuery(Name = "From")]
+   public string? LinkInvocation { get; set; }
+   [SupplyParameterFromQuery(Name = "TemplateId")]
+   public string? TemplateId { get; set; }
+   
+   private Issue Ticket { get; set; } = new();
+
+   private async Task CreateTicket()
+   {
+      if (UserId is null) return;
+      var user = UserManager.Users.FirstOrDefault(e => e.Id == UserId);
+      if (user is null) return;
+
+      var issue = await CreateIssue(user);
+
+      var ticket = await JiraService.CreateIssueAsync(issue, user);
+      Console.WriteLine(ticket.Id);
+   }
+
+   protected override async Task OnInitializedAsync()
+   {
+      var state = await AuthenticationState.GetAuthenticationStateAsync();
+      if (state.User.Identity is { IsAuthenticated: true })
+      {
+         UserId = UserManager.GetUserId(state.User);
+      }
+      
+   }
+
+   private async Task<Issue> CreateIssue(ApplicationUser user)
+   {
+      var template = await TemplateService.FindTemplateByIdAsync(Guid.Parse(TemplateId));
+      var templateTitle = template?.Name;
+      
+      return new Issue
+      {
+         Fields = new Fields
+         {
+            Description = Ticket.Fields.Description,
+            Summary = Ticket.Fields.Summary,
+            Issuetype = new Issuetype
+            {
+               Name = "Bug"
+            },
+            Project = new Project
+            {
+               Key = "SUPPORT"
+            },
+            SubmitedBy = user.Email!,
+            LinkInvocation = LinkInvocation,
+            TemplateTitle = templateTitle,
+            Priority = new Priority
+            {
+               Id = Ticket.Fields.Priority.Id
+            }
+         }
+      };
+   }
+
+}

@@ -60,13 +60,17 @@ builder.Services
     .AddScoped<ITagService, TagService>()
     .AddScoped<UploadService>()
     .AddScoped<ISalesforceAuthService, SalesforceAuthService>()
-    .AddScoped<ISalesforceService, SalesforceService>();
+    .AddScoped<ISalesforceService, SalesforceService>()
+    .AddScoped<IJiraService, JiraService>();
 
 builder.Services.AddSignalR();
 builder.Services.AddCors();
 builder.Services.AddLocalization();
-builder.Services.AddControllers();
-
+builder.Services.AddControllers().AddJsonOptions(
+    e =>
+    {
+        e.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 
 var app = builder.Build();
 
