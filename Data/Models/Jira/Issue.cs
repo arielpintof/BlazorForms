@@ -15,7 +15,7 @@ public class Fields
     public Issuetype Issuetype { get; set; }
     
     [JsonPropertyName("customfield_10055")]
-    public string SubmitedBy { get; set; }
+    public string SubmittedBy { get; set; }
     
     [JsonPropertyName("customfield_10056")]
     public string? LinkInvocation { get; set; }

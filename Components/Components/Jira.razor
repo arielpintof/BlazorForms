@@ -8,34 +8,48 @@
 @inject AuthenticationStateProvider AuthenticationState
 @inject ITemplateService TemplateService
 
-<div class="container my-5">
+<div class="container my-5 min-vh-100">
    <div class="row justify-content-center">
       <div class="col-lg-6 col-md-8">
          <div class="card shadow">
             <div class="card-body">
-               <h3 class="card-title text-center mb-4">Create Ticket</h3>
-               <EditForm Model="@Ticket" OnValidSubmit="CreateTicket">
-                  <!-- Summary Field -->
-                  <div class="mb-3">
-                     <label for="summary" class="form-label">Summary</label>
-                     <InputTextArea @bind-Value="Ticket.Fields.Summary" type="text" class="form-control" id="summary" name="summary" required/>
+               @if (!Created)
+               {
+                  <h3 class="card-title text-center mb-4">Create Ticket</h3>
+                  <EditForm Model="@Ticket" OnValidSubmit="CreateTicket">
+                     <div class="mb-3">
+                        <label for="summary" class="form-label">Summary</label>
+                        <InputTextArea @bind-Value="Ticket.Fields.Summary" type="text" class="form-control" id="summary" name="summary" required/>
+                     </div>
+                     
+                     <div class="mb-3">
+                        <label for="priority" class="form-label">Priority</label>
+                        <InputSelect @bind-Value="Ticket.Fields.Priority.Id" class="form-select" id="priority" name="priority" required>
+                           <option value="2">High</option>
+                           <option value="3">Medium</option>
+                           <option value="4">Low</option>
+                        </InputSelect>
+                     </div>
+                     
+                     <div class="">
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                     </div>
+                  </EditForm>
+               }
+               else
+               {
+                  <div class="text-center py-5">
+                     <div class="mb-4">
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                     </div>
+                     <h3 class="text-success">Ticket Created Successfully!</h3>
+                     <p>Your ticket has been created and is now being processed.</p>
+                     
+                     <div class="mt-4">
+                        <button class="btn btn-outline-primary" href="/">Back to home page</button>
+                     </div>
                   </div>
-
-                  <!-- Priority Field -->
-                  <div class="mb-3">
-                     <label for="priority" class="form-label">Priority</label>
-                     <select @bind-Value="Ticket.Fields.Priority.Id" class="form-select" id="priority" name="priority" required>
-                        <option value="2">High</option>
-                        <option value="3">Medium</option>
-                        <option value="4">Low</option>
-                     </select>
-                  </div>
-                  
-                  <!-- Submit Button -->
-                  <div class="">
-                     <button type="submit" class="btn btn-primary">Submit</button>
-                  </div>
-               </EditForm>
+               }
             </div>
          </div>
       </div>
@@ -51,6 +65,7 @@
    public string? TemplateId { get; set; }
    
    private Issue Ticket { get; set; } = new();
+   private bool Created { get; set; }
 
    private async Task CreateTicket()
    {
@@ -61,7 +76,9 @@
       var issue = await CreateIssue(user);
 
       var ticket = await JiraService.CreateIssueAsync(issue, user);
-      Console.WriteLine(ticket.Id);
+      if (ticket is not null) Created = true;
+      Console.WriteLine($"CREATED: {Created}");
+      StateHasChanged();
    }
 
    protected override async Task OnInitializedAsync()
@@ -76,7 +93,7 @@
 
    private async Task<Issue> CreateIssue(ApplicationUser user)
    {
-      var template = await TemplateService.FindTemplateByIdAsync(Guid.Parse(TemplateId));
+      var template = TemplateId is null ? null : await TemplateService.FindTemplateByIdAsync(Guid.Parse(TemplateId));
       var templateTitle = template?.Name;
       
       return new Issue
@@ -93,7 +110,7 @@
             {
                Key = "SUPPORT"
             },
-            SubmitedBy = user.Email!,
+            SubmittedBy = user.Email!,
             LinkInvocation = LinkInvocation,
             TemplateTitle = templateTitle,
             Priority = new Priority
